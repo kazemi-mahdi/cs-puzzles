@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hat Puzzle - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .hat-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .puzzle-area {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+            perspective: 1000px;
+        }
+
+        .person {
+            width: 150px;
+            height: 200px;
+            margin: 0 1rem;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+
+        .person:hover {
+            transform: rotateY(180deg);
+        }
+
+        .person-front, .person-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .person-front {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .person-back {
+            background-color: #2ecc71;
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .controls {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .solution {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .hint {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-left: 4px solid #f1c40f;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Hat Puzzle</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="hat-container">
+            <h2>The Hat Puzzle</h2>
+            
+            <div class="scenario">
+                <h3>The Scenario</h3>
+                <p>Three people are standing in a line, one behind the other. Each person can see the hats of the people in front of them, but not their own hat or the hats behind them.</p>
+                <p>There are 3 hats: 2 black and 1 white. Each person is wearing one hat.</p>
+                <p>Starting from the back, each person must guess the color of their own hat.</p>
+            </div>
+
+            <div class="puzzle-area">
+                <div class="person">
+                    <div class="person-front">Person 3</div>
+                    <div class="person-back">Can see Person 1 and 2</div>
+                </div>
+                <div class="person">
+                    <div class="person-front">Person 2</div>
+                    <div class="person-back">Can see Person 1</div>
+                </div>
+                <div class="person">
+                    <div class="person-front">Person 1</div>
+                    <div class="person-back">Can't see any hats</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" onclick="showHint()">Show Hint</button>
+                <button class="btn" onclick="showSolution()">Show Solution</button>
+            </div>
+
+            <div id="hint" class="hint">
+                <h3>Hint</h3>
+                <p>Think about what Person 3 can see and what they can deduce from Person 2's response.</p>
+            </div>
+
+            <div id="solution" class="solution">
+                <h3>Solution</h3>
+                <p>1. Person 3 can see both Person 1 and 2's hats. If they see two black hats, they know their hat must be white.</p>
+                <p>2. If Person 3 doesn't answer, Person 2 knows that Person 3 didn't see two black hats. If Person 2 sees a black hat on Person 1, they know their hat must be white.</p>
+                <p>3. If neither Person 3 nor Person 2 answers, Person 1 knows their hat must be white.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function showHint() {
+            const hintDiv = document.getElementById('hint');
+            hintDiv.style.display = hintDiv.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showSolution() {
+            const solutionDiv = document.getElementById('solution');
+            solutionDiv.style.display = solutionDiv.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html> 

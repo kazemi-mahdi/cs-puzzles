@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newcomb's Paradox - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .paradox-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .scenario {
+            margin: 2rem 0;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .choice-area {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .choice-btn {
+            padding: 1rem 2rem;
+            margin: 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .one-box {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .two-box {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .result {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .explanation {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-left: 4px solid #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Newcomb's Paradox</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="paradox-container">
+            <h2>Newcomb's Paradox</h2>
+            
+            <div class="scenario">
+                <h3>The Scenario</h3>
+                <p>You are presented with two boxes:</p>
+                <ul>
+                    <li>Box A: Always contains $1,000</li>
+                    <li>Box B: Either contains $1,000,000 or nothing</li>
+                </ul>
+                <p>A superintelligent being (the Predictor) has already predicted your choice and has either:</p>
+                <ul>
+                    <li>Put $1,000,000 in Box B if it predicted you would take only Box B</li>
+                    <li>Left Box B empty if it predicted you would take both boxes</li>
+                </ul>
+                <p>The Predictor is known to be extremely accurate in its predictions.</p>
+            </div>
+
+            <div class="choice-area">
+                <h3>What do you choose?</h3>
+                <button class="choice-btn one-box" onclick="makeChoice('one')">Take only Box B</button>
+                <button class="choice-btn two-box" onclick="makeChoice('two')">Take both boxes</button>
+            </div>
+
+            <div id="result" class="result"></div>
+
+            <div class="explanation">
+                <h3>The Paradox</h3>
+                <p>This thought experiment raises questions about free will, determinism, and rational decision-making:</p>
+                <ul>
+                    <li>One-boxers argue: The Predictor is accurate, so taking only Box B guarantees $1,000,000</li>
+                    <li>Two-boxers argue: The money is already in the boxes, so taking both always gives you more</li>
+                </ul>
+                <p>Which choice do you think is more rational? Why?</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function makeChoice(choice) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+
+            if (choice === 'one') {
+                resultDiv.innerHTML = `
+                    <h3>You chose to take only Box B</h3>
+                    <p>Since the Predictor is accurate, it likely predicted this choice.</p>
+                    <p>You receive: $1,000,000</p>
+                    <p>But what if the Predictor predicted you would take both boxes?</p>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <h3>You chose to take both boxes</h3>
+                    <p>Since the Predictor is accurate, it likely predicted this choice.</p>
+                    <p>You receive: $1,000 (Box A is always full)</p>
+                    <p>Box B is empty because the Predictor predicted you would take both boxes.</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 

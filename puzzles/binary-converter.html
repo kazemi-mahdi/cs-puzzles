@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Converter - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .converter-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Binary Converter</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="converter-container">
+            <h2>Convert Between Binary and Decimal</h2>
+            <div class="input-group">
+                <label for="decimal">Decimal Number:</label>
+                <input type="number" id="decimal" placeholder="Enter a decimal number">
+            </div>
+            <div class="input-group">
+                <label for="binary">Binary Number:</label>
+                <input type="text" id="binary" placeholder="Enter a binary number">
+            </div>
+            <button class="btn" onclick="convert()">Convert</button>
+            <div id="result" class="result"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function convert() {
+            const decimalInput = document.getElementById('decimal');
+            const binaryInput = document.getElementById('binary');
+            const resultDiv = document.getElementById('result');
+
+            if (decimalInput.value) {
+                const decimal = parseInt(decimalInput.value);
+                const binary = decimal.toString(2);
+                resultDiv.textContent = `Binary: ${binary}`;
+                resultDiv.style.display = 'block';
+            } else if (binaryInput.value) {
+                const binary = binaryInput.value;
+                if (/^[01]+$/.test(binary)) {
+                    const decimal = parseInt(binary, 2);
+                    resultDiv.textContent = `Decimal: ${decimal}`;
+                    resultDiv.style.display = 'block';
+                } else {
+                    resultDiv.textContent = 'Please enter a valid binary number (0s and 1s only)';
+                    resultDiv.style.display = 'block';
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prisoner's Dilemma - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .dilemma-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .game-area {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+        }
+
+        .player {
+            text-align: center;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 45%;
+        }
+
+        .choice-buttons {
+            margin-top: 1rem;
+        }
+
+        .choice-btn {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cooperate {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .defect {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .results {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .score-board {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .score-table th, .score-table td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .score-table th {
+            background-color: #2c3e50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Prisoner's Dilemma</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#games">Games</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="dilemma-container">
+            <h2>Prisoner's Dilemma Game</h2>
+            <p>You and another prisoner are being interrogated separately. You can either cooperate (stay silent) or defect (confess). Your sentence depends on both your choice and the other prisoner's choice.</p>
+
+            <div class="score-board">
+                <h3>Payoff Matrix</h3>
+                <table class="score-table">
+                    <tr>
+                        <th></th>
+                        <th>Other Cooperates</th>
+                        <th>Other Defects</th>
+                    </tr>
+                    <tr>
+                        <th>You Cooperate</th>
+                        <td>Both: 2 years</td>
+                        <td>You: 5 years, Other: 0 years</td>
+                    </tr>
+                    <tr>
+                        <th>You Defect</th>
+                        <td>You: 0 years, Other: 5 years</td>
+                        <td>Both: 4 years</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="game-area">
+                <div class="player">
+                    <h3>Your Choice</h3>
+                    <div class="choice-buttons">
+                        <button class="choice-btn cooperate" onclick="makeChoice('cooperate')">Cooperate</button>
+                        <button class="choice-btn defect" onclick="makeChoice('defect')">Defect</button>
+                    </div>
+                </div>
+                <div class="player">
+                    <h3>Computer's Choice</h3>
+                    <div id="computerChoice">Waiting for your choice...</div>
+                </div>
+            </div>
+
+            <div id="results" class="results"></div>
+
+            <div class="controls">
+                <button class="btn" onclick="resetGame()">New Round</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let gameHistory = [];
+        let playerScore = 0;
+        let computerScore = 0;
+
+        function makeChoice(choice) {
+            const computerChoice = Math.random() < 0.5 ? 'cooperate' : 'defect';
+            document.getElementById('computerChoice').textContent = `Computer chose to ${computerChoice}`;
+
+            const result = calculateResult(choice, computerChoice);
+            gameHistory.push({
+                player: choice,
+                computer: computerChoice,
+                result: result
+            });
+
+            updateScores(result);
+            displayResults(choice, computerChoice, result);
+        }
+
+        function calculateResult(playerChoice, computerChoice) {
+            if (playerChoice === 'cooperate' && computerChoice === 'cooperate') {
+                return { player: 2, computer: 2 };
+            } else if (playerChoice === 'cooperate' && computerChoice === 'defect') {
+                return { player: 5, computer: 0 };
+            } else if (playerChoice === 'defect' && computerChoice === 'cooperate') {
+                return { player: 0, computer: 5 };
+            } else {
+                return { player: 4, computer: 4 };
+            }
+        }
+
+        function updateScores(result) {
+            playerScore += result.player;
+            computerScore += result.computer;
+        }
+
+        function displayResults(playerChoice, computerChoice, result) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `
+                <h3>Round Results</h3>
+                <p>You chose to ${playerChoice}</p>
+                <p>Computer chose to ${computerChoice}</p>
+                <p>Your sentence: ${result.player} years</p>
+                <p>Computer's sentence: ${result.computer} years</p>
+                <p>Total scores - You: ${playerScore} years, Computer: ${computerScore} years</p>
+            `;
+        }
+
+        function resetGame() {
+            gameHistory = [];
+            playerScore = 0;
+            computerScore = 0;
+            document.getElementById('computerChoice').textContent = 'Waiting for your choice...';
+            document.getElementById('results').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 

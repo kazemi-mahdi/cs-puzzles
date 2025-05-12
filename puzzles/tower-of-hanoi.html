@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower of Hanoi - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .hanoi-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tower-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+            height: 300px;
+            position: relative;
+        }
+
+        .tower {
+            width: 20px;
+            height: 200px;
+            background-color: #2c3e50;
+            position: relative;
+            margin: 0 40px;
+        }
+
+        .tower::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -40px;
+            width: 100px;
+            height: 20px;
+            background-color: #2c3e50;
+        }
+
+        .disk {
+            height: 30px;
+            background-color: #3498db;
+            border-radius: 15px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .moves {
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+
+        .win-message {
+            display: none;
+            color: #27ae60;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Tower of Hanoi</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="hanoi-container">
+            <h2>Tower of Hanoi Puzzle</h2>
+            <p>Move all disks from the left tower to the right tower. You can only move one disk at a time, and you can't place a larger disk on top of a smaller one.</p>
+            
+            <div class="controls">
+                <button class="btn" onclick="resetGame()">Reset Game</button>
+                <div class="moves">Moves: <span id="moveCount">0</span></div>
+            </div>
+
+            <div class="tower-container" id="gameBoard">
+                <div class="tower" id="tower1"></div>
+                <div class="tower" id="tower2"></div>
+                <div class="tower" id="tower3"></div>
+            </div>
+
+            <div class="win-message" id="winMessage">
+                Congratulations! You solved the puzzle!
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let selectedDisk = null;
+        let moveCount = 0;
+        const numDisks = 4;
+        const diskColors = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71'];
+
+        function initializeGame() {
+            const tower1 = document.getElementById('tower1');
+            for (let i = 0; i < numDisks; i++) {
+                const disk = document.createElement('div');
+                disk.className = 'disk';
+                disk.style.width = `${(i + 1) * 40}px`;
+                disk.style.bottom = `${i * 35}px`;
+                disk.style.backgroundColor = diskColors[i];
+                disk.setAttribute('data-size', i);
+                disk.addEventListener('click', () => handleDiskClick(disk));
+                tower1.appendChild(disk);
+            }
+        }
+
+        function handleDiskClick(disk) {
+            if (selectedDisk === null) {
+                selectedDisk = disk;
+                disk.style.opacity = '0.7';
+            } else {
+                const targetTower = disk.parentElement;
+                const sourceTower = selectedDisk.parentElement;
+                
+                if (canMove(selectedDisk, targetTower)) {
+                    moveDisk(selectedDisk, targetTower);
+                    moveCount++;
+                    document.getElementById('moveCount').textContent = moveCount;
+                    checkWin();
+                }
+                
+                selectedDisk.style.opacity = '1';
+                selectedDisk = null;
+            }
+        }
+
+        function canMove(disk, targetTower) {
+            const topDisk = targetTower.querySelector('.disk');
+            if (!topDisk) return true;
+            return parseInt(disk.getAttribute('data-size')) < parseInt(topDisk.getAttribute('data-size'));
+        }
+
+        function moveDisk(disk, targetTower) {
+            const disks = targetTower.querySelectorAll('.disk');
+            const newBottom = disks.length * 35;
+            disk.style.bottom = `${newBottom}px`;
+            targetTower.appendChild(disk);
+        }
+
+        function checkWin() {
+            const tower3 = document.getElementById('tower3');
+            if (tower3.querySelectorAll('.disk').length === numDisks) {
+                document.getElementById('winMessage').style.display = 'block';
+            }
+        }
+
+        function resetGame() {
+            const towers = document.querySelectorAll('.tower');
+            towers.forEach(tower => tower.innerHTML = '');
+            moveCount = 0;
+            document.getElementById('moveCount').textContent = '0';
+            document.getElementById('winMessage').style.display = 'none';
+            initializeGame();
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html> 
