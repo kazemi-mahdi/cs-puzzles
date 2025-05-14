@@ -118,10 +118,10 @@
             for (let i = 0; i < numDisks; i++) {
                 const disk = document.createElement('div');
                 disk.className = 'disk';
-                disk.style.width = `${(i + 1) * 40}px`;
+                disk.style.width = `${(numDisks - i) * 40}px`;
                 disk.style.bottom = `${i * 35}px`;
                 disk.style.backgroundColor = diskColors[i];
-                disk.setAttribute('data-size', i);
+                disk.setAttribute('data-size', numDisks - i - 1);
                 disk.addEventListener('click', () => handleDiskClick(disk));
                 tower1.appendChild(disk);
             }
