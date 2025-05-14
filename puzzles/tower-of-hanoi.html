@@ -52,6 +52,17 @@
             cursor: pointer;
             transition: all 0.3s ease;
             touch-action: manipulation;
+            z-index: 1;
+        }
+
+        .disk.selected {
+            opacity: 0.7;
+            transform: translateX(-50%) scale(1.05);
+            z-index: 2;
+        }
+
+        .disk.moving {
+            transition: all 0.5s ease;
         }
 
         .controls {
@@ -73,6 +84,14 @@
             display: none;
             color: #27ae60;
             font-size: 1.1rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .error-message {
+            display: none;
+            color: #e74c3c;
+            font-size: 0.9rem;
             margin-top: 0.5rem;
             text-align: center;
         }
@@ -135,7 +154,9 @@
             
             <div class="controls">
                 <button class="btn" onclick="resetGame()">Reset Game</button>
+                <button class="btn" onclick="showOptimalSolution()">Show Optimal Solution</button>
                 <div class="moves">Moves: <span id="moveCount">0</span></div>
+                <div class="error-message" id="errorMessage">Invalid move: Cannot place a larger disk on top of a smaller one!</div>
             </div>
 
             <div class="tower-container" id="gameBoard">
@@ -159,6 +180,7 @@
         let moveCount = 0;
         const numDisks = 4;
         const diskColors = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71'];
+        let isAnimating = false;
 
         function initializeGame() {
             const tower1 = document.getElementById('tower1');
@@ -170,58 +192,58 @@
                 disk.style.backgroundColor = diskColors[i];
                 disk.setAttribute('data-size', i);
                 disk.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent tower click when clicking disk
-                    handleDiskClick(disk);
+                    e.stopPropagation();
+                    if (!isAnimating) handleDiskClick(disk);
                 });
                 tower1.appendChild(disk);
             }
 
-            // Add click handlers for towers
             const towers = document.querySelectorAll('.tower');
             towers.forEach(tower => {
-                tower.addEventListener('click', () => handleTowerClick(tower));
+                tower.addEventListener('click', () => {
+                    if (!isAnimating) handleTowerClick(tower);
+                });
             });
         }
 
         function handleDiskClick(disk) {
             if (selectedDisk === null) {
-                // Select the disk
                 selectedDisk = disk;
-                disk.style.opacity = '0.7';
+                disk.classList.add('selected');
             } else if (selectedDisk === disk) {
-                // Deselect the disk
-                selectedDisk.style.opacity = '1';
+                selectedDisk.classList.remove('selected');
                 selectedDisk = null;
             } else {
-                // Try to move the selected disk to the tower of the clicked disk
                 const targetTower = disk.parentElement;
                 if (canMove(selectedDisk, targetTower)) {
                     moveDisk(selectedDisk, targetTower);
                     moveCount++;
                     document.getElementById('moveCount').textContent = moveCount;
                     checkWin();
+                } else {
+                    showError();
                 }
-                selectedDisk.style.opacity = '1';
+                selectedDisk.classList.remove('selected');
                 selectedDisk = null;
             }
         }
 
         function handleTowerClick(tower) {
             if (selectedDisk === null) {
-                // If no disk is selected, try to select the top disk of this tower
                 const topDisk = tower.querySelector('.disk');
                 if (topDisk) {
                     handleDiskClick(topDisk);
                 }
             } else {
-                // If a disk is selected, try to move it to this tower
                 if (canMove(selectedDisk, tower)) {
                     moveDisk(selectedDisk, tower);
                     moveCount++;
                     document.getElementById('moveCount').textContent = moveCount;
                     checkWin();
+                } else {
+                    showError();
                 }
-                selectedDisk.style.opacity = '1';
+                selectedDisk.classList.remove('selected');
                 selectedDisk = null;
             }
         }
@@ -235,8 +257,18 @@
         function moveDisk(disk, targetTower) {
             const disks = targetTower.querySelectorAll('.disk');
             const newBottom = disks.length * 35;
+            disk.classList.add('moving');
             disk.style.bottom = `${newBottom}px`;
             targetTower.appendChild(disk);
+            setTimeout(() => disk.classList.remove('moving'), 500);
+        }
+
+        function showError() {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 2000);
         }
 
         function checkWin() {
@@ -252,8 +284,54 @@
             moveCount = 0;
             document.getElementById('moveCount').textContent = '0';
             document.getElementById('winMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
             selectedDisk = null;
+            isAnimating = false;
             initializeGame();
+        }
+
+        function showOptimalSolution() {
+            if (isAnimating) return;
+            isAnimating = true;
+            resetGame();
+            
+            const moves = [];
+            function hanoi(n, source, auxiliary, target) {
+                if (n === 1) {
+                    moves.push([source, target]);
+                    return;
+                }
+                hanoi(n - 1, source, target, auxiliary);
+                moves.push([source, target]);
+                hanoi(n - 1, auxiliary, source, target);
+            }
+            
+            hanoi(numDisks, 1, 2, 3);
+            
+            let currentMove = 0;
+            function animateMove() {
+                if (currentMove >= moves.length) {
+                    isAnimating = false;
+                    return;
+                }
+                
+                const [source, target] = moves[currentMove];
+                const sourceTower = document.getElementById(`tower${source}`);
+                const targetTower = document.getElementById(`tower${target}`);
+                const disk = sourceTower.querySelector('.disk');
+                
+                if (disk) {
+                    moveDisk(disk, targetTower);
+                    moveCount++;
+                    document.getElementById('moveCount').textContent = moveCount;
+                    checkWin();
+                }
+                
+                currentMove++;
+                setTimeout(animateMove, 1000);
+            }
+            
+            animateMove();
         }
 
         // Initialize the game when the page loads
