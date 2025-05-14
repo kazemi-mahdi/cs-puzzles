@@ -83,6 +83,47 @@
             border: 1px solid #ddd;
         }
 
+        .calculation-steps {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+
+        .calculation-steps h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .step {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .step-number {
+            font-weight: bold;
+            color: #3498db;
+            margin-right: 0.5rem;
+        }
+
+        .step-formula {
+            font-family: monospace;
+            background-color: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            margin: 0.25rem 0;
+        }
+
+        .step-explanation {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
         .history-item {
             padding: 0.5rem;
             border-bottom: 1px solid #eee;
@@ -149,6 +190,11 @@
                 <button class="btn" onclick="convert()">Convert</button>
 
                 <div id="result" class="result"></div>
+
+                <div class="calculation-steps" id="calculationSteps">
+                    <h3>Calculation Steps</h3>
+                    <div id="stepsContent"></div>
+                </div>
 
                 <div class="conversion-history">
                     <h3>Recent Conversions</h3>
@@ -225,9 +271,12 @@
             const fromBase = parseInt(document.getElementById('fromBase').value);
             const toBase = parseInt(document.getElementById('toBase').value);
             const resultDiv = document.getElementById('result');
+            const stepsDiv = document.getElementById('calculationSteps');
+            const stepsContent = document.getElementById('stepsContent');
 
             if (!validateInput(fromNumber, fromBase)) {
                 resultDiv.style.display = 'none';
+                stepsDiv.style.display = 'none';
                 return;
             }
 
@@ -253,6 +302,43 @@
             resultDiv.textContent = result;
             resultDiv.style.display = 'block';
 
+            // Generate calculation steps
+            let steps = [];
+            
+            if (fromBase !== 10) {
+                // Step 1: Convert to decimal
+                steps.push({
+                    number: 1,
+                    title: "Convert to Decimal",
+                    formula: `${fromNumber} (base ${fromBase}) → Decimal`,
+                    explanation: `Each digit is multiplied by ${fromBase} raised to its position power (from right to left, starting at 0)`,
+                    calculation: generateDecimalConversionSteps(fromNumber, fromBase)
+                });
+            }
+
+            if (toBase !== 10) {
+                // Step 2: Convert from decimal to target base
+                steps.push({
+                    number: fromBase === 10 ? 1 : 2,
+                    title: `Convert to Base ${toBase}`,
+                    formula: `${decimal} (decimal) → Base ${toBase}`,
+                    explanation: `Repeatedly divide by ${toBase} and collect remainders from bottom to top`,
+                    calculation: generateBaseConversionSteps(decimal, toBase)
+                });
+            }
+
+            // Display steps
+            stepsContent.innerHTML = steps.map(step => `
+                <div class="step">
+                    <div><span class="step-number">Step ${step.number}:</span> ${step.title}</div>
+                    <div class="step-formula">${step.formula}</div>
+                    <div class="step-explanation">${step.explanation}</div>
+                    <div class="step-formula">${step.calculation}</div>
+                </div>
+            `).join('');
+            
+            stepsDiv.style.display = 'block';
+
             // Add to history
             conversionHistory.unshift({
                 from: `${fromNumber} (base ${fromBase})`,
@@ -265,6 +351,43 @@
             }
 
             updateHistory();
+        }
+
+        function generateDecimalConversionSteps(number, base) {
+            const digits = number.split('').reverse();
+            let steps = [];
+            let decimal = 0;
+            
+            digits.forEach((digit, index) => {
+                const value = parseInt(digit, base);
+                const power = Math.pow(base, index);
+                const step = `${digit} × ${base}^${index} = ${value} × ${power} = ${value * power}`;
+                steps.push(step);
+                decimal += value * power;
+            });
+            
+            steps.push(`Sum: ${steps.join(' + ')} = ${decimal}`);
+            return steps.join('<br>');
+        }
+
+        function generateBaseConversionSteps(decimal, base) {
+            let steps = [];
+            let num = decimal;
+            let remainders = [];
+            
+            while (num > 0) {
+                const remainder = num % base;
+                remainders.unshift(remainder);
+                steps.push(`${num} ÷ ${base} = ${Math.floor(num / base)} remainder ${remainder}`);
+                num = Math.floor(num / base);
+            }
+            
+            if (steps.length === 0) {
+                steps.push("0");
+            }
+            
+            steps.push(`Result: ${remainders.join('')}`);
+            return steps.join('<br>');
         }
 
         function updateHistory() {
