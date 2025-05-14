@@ -1,19 +1,20 @@
 /* Base styles */
 :root {
-    --primary-color: #4a90e2;
-    --secondary-color: #2c3e50;
-    --accent-color: #e74c3c;
+    --primary-color: #ff6b35;
+    --secondary-color: #7b2cbf;
+    --accent-color: #ffd60a;
     --success-color: #2ecc71;
     --warning-color: #f1c40f;
-    --background-color: #f0f4f8;
-    --text-color: #2c3e50;
+    --background-color: #fff5f0;
+    --text-color: #2d1b1b;
     --card-background: #ffffff;
     --border-radius: 12px;
     --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
-    --gradient-primary: linear-gradient(135deg, #4a90e2, #357abd);
-    --gradient-accent: linear-gradient(135deg, #e74c3c, #c0392b);
+    --gradient-primary: linear-gradient(135deg, #ff6b35, #ff8c42);
+    --gradient-accent: linear-gradient(135deg, #7b2cbf, #9d4edd);
     --gradient-success: linear-gradient(135deg, #2ecc71, #27ae60);
+    --gradient-warm: linear-gradient(135deg, #ff6b35, #ffd60a);
 }
 
 * {
@@ -29,14 +30,14 @@ body {
     background-color: var(--background-color);
     font-size: 16px;
     background-image: 
-        radial-gradient(circle at 100% 100%, rgba(74, 144, 226, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 0% 0%, rgba(231, 76, 60, 0.1) 0%, transparent 50%);
+        radial-gradient(circle at 100% 100%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 0% 0%, rgba(123, 44, 191, 0.1) 0%, transparent 50%);
     background-attachment: fixed;
 }
 
 /* Header styles */
 header {
-    background: var(--gradient-primary);
+    background: var(--gradient-warm);
     padding: 1rem;
     box-shadow: var(--box-shadow);
     position: sticky;
@@ -68,11 +69,11 @@ nav a {
     padding: 0.5rem 1rem;
     border-radius: var(--border-radius);
     transition: var(--transition);
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 nav a:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.25);
     transform: translateY(-2px);
 }
 
@@ -104,7 +105,7 @@ section h2::after {
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background: var(--gradient-primary);
+    background: var(--gradient-warm);
     border-radius: 3px;
 }
 
@@ -129,6 +130,7 @@ section h2::after {
     height: 100%;
     position: relative;
     overflow: hidden;
+    border: 1px solid rgba(255, 107, 53, 0.1);
 }
 
 .puzzle-card::before, .game-card::before {
@@ -138,7 +140,7 @@ section h2::after {
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--gradient-primary);
+    background: var(--gradient-warm);
     opacity: 0;
     transition: var(--transition);
 }
@@ -149,7 +151,8 @@ section h2::after {
 
 .puzzle-card:hover, .game-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(255, 107, 53, 0.15);
+    border-color: rgba(255, 107, 53, 0.2);
 }
 
 .puzzle-card h3, .game-card h3 {
@@ -167,7 +170,7 @@ section h2::after {
 .btn {
     display: inline-block;
     padding: 0.8rem 1.5rem;
-    background: var(--gradient-primary);
+    background: var(--gradient-warm);
     color: white;
     text-decoration: none;
     border-radius: var(--border-radius);
@@ -179,12 +182,13 @@ section h2::after {
     width: 100%;
     max-width: 200px;
     margin: 0 auto;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
 }
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+    background: linear-gradient(135deg, #ff8c42, #ffd60a);
 }
 
 /* About section */
@@ -196,6 +200,7 @@ section h2::after {
     margin-top: 2rem;
     position: relative;
     overflow: hidden;
+    border: 1px solid rgba(255, 107, 53, 0.1);
 }
 
 #about::before {
@@ -205,7 +210,7 @@ section h2::after {
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--gradient-primary);
+    background: var(--gradient-warm);
 }
 
 #about p {
@@ -215,7 +220,7 @@ section h2::after {
 
 /* Footer styles */
 footer {
-    background: var(--gradient-primary);
+    background: var(--gradient-warm);
     color: white;
     text-align: center;
     padding: 1.5rem;
@@ -300,7 +305,7 @@ footer {
     }
 
     nav a:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(255, 255, 255, 0.15);
         transform: none;
     }
 }
