@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N-Queens Problem - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .n-queens-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            margin: 2rem auto;
+            max-width: 600px;
+            aspect-ratio: 1;
+        }
+
+        .cell {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cell:nth-child(odd) {
+            background-color: #f0f0f0;
+        }
+
+        .cell.queen {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .cell.invalid {
+            background-color: #e74c3c;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .size-control {
+            margin: 1rem 0;
+        }
+
+        .status {
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>N-Queens Problem</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="n-queens-container">
+            <h2>N-Queens Puzzle</h2>
+            <p>Place N queens on an N×N chessboard so that no two queens threaten each other. Queens can move horizontally, vertically, and diagonally.</p>
+            
+            <div class="controls">
+                <div class="size-control">
+                    <label for="boardSize">Board Size:</label>
+                    <select id="boardSize" onchange="changeBoardSize()">
+                        <option value="4">4×4</option>
+                        <option value="5">5×5</option>
+                        <option value="6">6×6</option>
+                        <option value="7">7×7</option>
+                        <option value="8" selected>8×8</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="resetBoard()">Reset Board</button>
+                <button class="btn" onclick="solvePuzzle()">Solve</button>
+                <div class="status" id="status"></div>
+            </div>
+
+            <div class="board" id="board"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let boardSize = 8;
+        let board = [];
+        let queens = [];
+
+        function initializeBoard() {
+            const boardElement = document.getElementById('board');
+            boardElement.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+            boardElement.innerHTML = '';
+            board = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
+            queens = [];
+
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', () => toggleQueen(i, j, cell));
+                    boardElement.appendChild(cell);
+                }
+            }
+            updateStatus();
+        }
+
+        function toggleQueen(row, col, cell) {
+            if (board[row][col] === 1) {
+                board[row][col] = 0;
+                cell.classList.remove('queen');
+                queens = queens.filter(q => !(q.row === row && q.col === col));
+            } else {
+                board[row][col] = 1;
+                cell.classList.add('queen');
+                queens.push({row, col});
+            }
+            updateBoard();
+            updateStatus();
+        }
+
+        function updateBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.classList.remove('invalid');
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                
+                if (isThreatened(row, col)) {
+                    cell.classList.add('invalid');
+                }
+            });
+        }
+
+        function isThreatened(row, col) {
+            return queens.some(queen => {
+                if (queen.row === row && queen.col === col) return false;
+                return queen.row === row || 
+                       queen.col === col || 
+                       Math.abs(queen.row - row) === Math.abs(queen.col - col);
+            });
+        }
+
+        function updateStatus() {
+            const status = document.getElementById('status');
+            const valid = queens.every(queen => !isThreatened(queen.row, queen.col));
+            
+            if (queens.length === boardSize && valid) {
+                status.textContent = 'Congratulations! You solved the puzzle!';
+                status.style.color = '#27ae60';
+            } else if (!valid) {
+                status.textContent = 'Invalid placement - queens are threatening each other';
+                status.style.color = '#e74c3c';
+            } else {
+                status.textContent = `Queens placed: ${queens.length}/${boardSize}`;
+                status.style.color = '#2c3e50';
+            }
+        }
+
+        function changeBoardSize() {
+            boardSize = parseInt(document.getElementById('boardSize').value);
+            initializeBoard();
+        }
+
+        function resetBoard() {
+            initializeBoard();
+        }
+
+        function solvePuzzle() {
+            // Simple backtracking solution
+            function solve(row) {
+                if (row === boardSize) return true;
+                
+                for (let col = 0; col < boardSize; col++) {
+                    if (isSafe(row, col)) {
+                        board[row][col] = 1;
+                        queens.push({row, col});
+                        
+                        if (solve(row + 1)) return true;
+                        
+                        board[row][col] = 0;
+                        queens.pop();
+                    }
+                }
+                return false;
+            }
+
+            function isSafe(row, col) {
+                return !queens.some(queen => 
+                    queen.col === col || 
+                    Math.abs(queen.row - row) === Math.abs(queen.col - col)
+                );
+            }
+
+            resetBoard();
+            if (solve(0)) {
+                updateBoard();
+                updateStatus();
+            } else {
+                document.getElementById('status').textContent = 'No solution found!';
+                document.getElementById('status').style.color = '#e74c3c';
+            }
+        }
+
+        // Initialize the board when the page loads
+        document.addEventListener('DOMContentLoaded', initializeBoard);
+    </script>
+</body>
+</html> 

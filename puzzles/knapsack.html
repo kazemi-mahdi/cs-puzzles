@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knapsack Problem - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .knapsack-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .item-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 4px;
+        }
+
+        .item-list {
+            margin: 2rem 0;
+        }
+
+        .item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 1rem;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background-color: #fff;
+            border-radius: 4px;
+            align-items: center;
+        }
+
+        .item:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .solution {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #e8f4f8;
+            border-radius: 4px;
+        }
+
+        .selected {
+            background-color: #d4edda;
+        }
+
+        .capacity-control {
+            margin: 1rem 0;
+        }
+
+        .btn-remove {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-remove:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Knapsack Problem</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="knapsack-container">
+            <h2>Knapsack Problem</h2>
+            <p>Given a set of items with weights and values, determine the most valuable combination of items that can fit in a knapsack with a given capacity.</p>
+            
+            <div class="capacity-control">
+                <label for="capacity">Knapsack Capacity:</label>
+                <input type="number" id="capacity" value="15" min="1" onchange="updateSolution()">
+            </div>
+
+            <div class="item-form">
+                <div>
+                    <label for="itemName">Item Name:</label>
+                    <input type="text" id="itemName" placeholder="Enter item name">
+                </div>
+                <div>
+                    <label for="itemWeight">Weight:</label>
+                    <input type="number" id="itemWeight" min="1" placeholder="Enter weight">
+                </div>
+                <div>
+                    <label for="itemValue">Value:</label>
+                    <input type="number" id="itemValue" min="1" placeholder="Enter value">
+                </div>
+                <div>
+                    <button class="btn" onclick="addItem()">Add Item</button>
+                </div>
+            </div>
+
+            <div class="item-list" id="itemList">
+                <div class="item header">
+                    <div>Name</div>
+                    <div>Weight</div>
+                    <div>Value</div>
+                    <div>Action</div>
+                </div>
+            </div>
+
+            <div class="solution" id="solution">
+                <h3>Solution</h3>
+                <p>Add items and click "Solve" to find the optimal combination.</p>
+            </div>
+
+            <div class="controls">
+                <button class="btn" onclick="solveKnapsack()">Solve</button>
+                <button class="btn" onclick="resetItems()">Reset</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let items = [];
+
+        function addItem() {
+            const name = document.getElementById('itemName').value;
+            const weight = parseInt(document.getElementById('itemWeight').value);
+            const value = parseInt(document.getElementById('itemValue').value);
+
+            if (!name || !weight || !value) {
+                alert('Please fill in all fields with valid values');
+                return;
+            }
+
+            items.push({ name, weight, value });
+            updateItemList();
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemWeight').value = '';
+            document.getElementById('itemValue').value = '';
+        }
+
+        function updateItemList() {
+            const itemList = document.getElementById('itemList');
+            const header = itemList.querySelector('.header');
+            itemList.innerHTML = '';
+            itemList.appendChild(header);
+
+            items.forEach((item, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item';
+                itemElement.innerHTML = `
+                    <div>${item.name}</div>
+                    <div>${item.weight}</div>
+                    <div>${item.value}</div>
+                    <button class="btn-remove" onclick="removeItem(${index})">Remove</button>
+                `;
+                itemList.appendChild(itemElement);
+            });
+        }
+
+        function removeItem(index) {
+            items.splice(index, 1);
+            updateItemList();
+            updateSolution();
+        }
+
+        function resetItems() {
+            items = [];
+            updateItemList();
+            updateSolution();
+        }
+
+        function solveKnapsack() {
+            const capacity = parseInt(document.getElementById('capacity').value);
+            const n = items.length;
+            const dp = Array(n + 1).fill().map(() => Array(capacity + 1).fill(0));
+            const selected = Array(n + 1).fill().map(() => Array(capacity + 1).fill(false));
+
+            // Fill the dp table
+            for (let i = 1; i <= n; i++) {
+                for (let w = 0; w <= capacity; w++) {
+                    if (items[i-1].weight <= w) {
+                        const include = items[i-1].value + dp[i-1][w - items[i-1].weight];
+                        const exclude = dp[i-1][w];
+                        
+                        if (include > exclude) {
+                            dp[i][w] = include;
+                            selected[i][w] = true;
+                        } else {
+                            dp[i][w] = exclude;
+                        }
+                    } else {
+                        dp[i][w] = dp[i-1][w];
+                    }
+                }
+            }
+
+            // Find selected items
+            const selectedItems = [];
+            let w = capacity;
+            for (let i = n; i > 0; i--) {
+                if (selected[i][w]) {
+                    selectedItems.push(items[i-1]);
+                    w -= items[i-1].weight;
+                }
+            }
+
+            // Update solution display
+            const solution = document.getElementById('solution');
+            const totalValue = dp[n][capacity];
+            const totalWeight = selectedItems.reduce((sum, item) => sum + item.weight, 0);
+
+            solution.innerHTML = `
+                <h3>Solution</h3>
+                <p>Total Value: ${totalValue}</p>
+                <p>Total Weight: ${totalWeight}/${capacity}</p>
+                <p>Selected Items:</p>
+                <ul>
+                    ${selectedItems.map(item => `
+                        <li>${item.name} (Weight: ${item.weight}, Value: ${item.value})</li>
+                    `).join('')}
+                </ul>
+            `;
+
+            // Highlight selected items
+            const itemElements = document.querySelectorAll('.item:not(.header)');
+            itemElements.forEach((element, index) => {
+                element.classList.remove('selected');
+                if (selectedItems.includes(items[index])) {
+                    element.classList.add('selected');
+                }
+            });
+        }
+
+        function updateSolution() {
+            const solution = document.getElementById('solution');
+            solution.innerHTML = `
+                <h3>Solution</h3>
+                <p>Add items and click "Solve" to find the optimal combination.</p>
+            `;
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateItemList();
+            updateSolution();
+        });
+    </script>
+</body>
+</html> 
