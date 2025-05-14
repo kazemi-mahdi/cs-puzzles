@@ -7,110 +7,144 @@
     <link rel="stylesheet" href="../css/style.css">
     <style>
         .graph-container {
-            max-width: 800px;
-            margin: 1rem auto;
-            padding: 1rem;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .canvas-container {
-            position: relative;
-            margin: 1rem 0;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            touch-action: none;
+        .graph-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
         }
 
         canvas {
-            display: block;
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
             width: 100%;
             height: 400px;
-            cursor: pointer;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        canvas:active {
+            cursor: grabbing;
         }
 
         .controls {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin: 1rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            justify-content: center;
         }
 
         .color-palette {
             display: flex;
-            gap: 0.5rem;
             flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
             margin: 1rem 0;
+            padding: 1rem;
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
         }
 
         .color-option {
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
-            transition: transform 0.2s;
-        }
-
-        .color-option.selected {
-            border-color: #2c3e50;
-            transform: scale(1.1);
+            transition: var(--transition);
+            box-shadow: var(--box-shadow);
         }
 
         .color-option:hover {
             transform: scale(1.1);
         }
 
-        .node {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background-color: #3498db;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            cursor: move;
-            user-select: none;
-            touch-action: none;
-        }
-
-        .node.selected {
-            border: 3px solid #2c3e50;
+        .color-option.selected {
+            border-color: var(--secondary-color);
+            transform: scale(1.1);
         }
 
         .stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 1rem 0;
-            font-size: 0.9rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
         }
 
         .stat-item {
             text-align: center;
+            padding: 1rem;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
         }
 
-        .stat-value {
+        .stat-item h3 {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item p {
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #3498db;
+            color: var(--secondary-color);
         }
 
-        .win-message {
+        .solution-info {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: var(--box-shadow);
             display: none;
-            color: #27ae60;
-            font-size: 1.1rem;
-            margin-top: 0.5rem;
-            text-align: center;
         }
 
-        @media (max-width: 480px) {
+        .solution-info h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+
+        .solution-info p {
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            min-width: 150px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
             .graph-container {
-                margin: 0.5rem;
-                padding: 0.5rem;
+                padding: 1rem;
             }
 
             canvas {
@@ -118,24 +152,67 @@
             }
 
             .controls {
-                margin: 0.5rem 0;
+                flex-direction: column;
+                align-items: stretch;
             }
 
             .btn {
                 width: 100%;
-                max-width: 200px;
-                padding: 0.6rem;
+            }
+
+            .color-palette {
+                padding: 0.5rem;
             }
 
             .color-option {
-                width: 25px;
-                height: 25px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-item {
+                padding: 0.8rem;
+            }
+
+            .stat-item h3 {
+                font-size: 1.1rem;
+            }
+
+            .stat-item p {
+                font-size: 1.3rem;
             }
         }
 
+        @media (max-width: 480px) {
+            canvas {
+                height: 250px;
+            }
+
+            .color-option {
+                width: 30px;
+                height: 30px;
+            }
+
+            .solution-info {
+                padding: 1rem;
+            }
+
+            .solution-info h3 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Touch device optimizations */
         @media (hover: none) {
             .color-option:hover {
                 transform: none;
+            }
+
+            .color-option.selected {
+                transform: scale(1.1);
             }
         }
     </style>
@@ -180,10 +257,17 @@
             <div class="controls">
                 <button class="btn" onclick="resetGraph()">New Graph</button>
                 <button class="btn" onclick="checkSolution()">Check Solution</button>
+                <button class="btn" onclick="showOptimalSolution()">Show Optimal Solution</button>
             </div>
 
             <div class="win-message" id="winMessage">
                 Congratulations! You found a valid coloring!
+            </div>
+
+            <div class="solution-info" id="solutionInfo" style="display: none; margin-top: 1rem; padding: 1rem; background-color: #e9ecef; border-radius: 4px;">
+                <h3>Optimal Solution Information</h3>
+                <p>The graph has been colored using a greedy algorithm. The chromatic number (minimum number of colors needed) is: <span id="chromaticNumber">0</span></p>
+                <p>This solution guarantees that no adjacent vertices share the same color.</p>
             </div>
         </div>
     </main>
@@ -404,7 +488,59 @@
         function resetGraph() {
             nodes.forEach(node => node.color = null);
             document.getElementById('winMessage').style.display = 'none';
+            document.getElementById('solutionInfo').style.display = 'none';
             generateRandomGraph();
+        }
+
+        function showOptimalSolution() {
+            // Reset current coloring
+            nodes.forEach(node => node.color = null);
+            
+            // Create adjacency list
+            const adjacencyList = nodes.map(() => []);
+            edges.forEach(edge => {
+                adjacencyList[edge.from].push(edge.to);
+                adjacencyList[edge.to].push(edge.from);
+            });
+
+            // Sort nodes by degree (descending)
+            const nodeDegrees = nodes.map((_, i) => ({
+                index: i,
+                degree: adjacencyList[i].length
+            }));
+            nodeDegrees.sort((a, b) => b.degree - a.degree);
+
+            // Greedy coloring algorithm
+            const usedColors = new Set();
+            nodeDegrees.forEach(({ index }) => {
+                const node = nodes[index];
+                const adjacentColors = new Set();
+                
+                // Get colors of adjacent nodes
+                adjacencyList[index].forEach(adjIndex => {
+                    if (nodes[adjIndex].color) {
+                        adjacentColors.add(nodes[adjIndex].color);
+                    }
+                });
+
+                // Find the first available color
+                let colorIndex = 0;
+                while (adjacentColors.has(colors[colorIndex])) {
+                    colorIndex++;
+                }
+
+                // Assign color to node
+                node.color = colors[colorIndex];
+                usedColors.add(colors[colorIndex]);
+            });
+
+            // Update display
+            drawGraph();
+            updateStats();
+            
+            // Show solution info
+            document.getElementById('chromaticNumber').textContent = usedColors.size;
+            document.getElementById('solutionInfo').style.display = 'block';
         }
 
         // Initialize the game when the page loads
