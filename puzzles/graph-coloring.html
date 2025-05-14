@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Coloring - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .graph-container {
+            max-width: 800px;
+            margin: 1rem auto;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .canvas-container {
+            position: relative;
+            margin: 1rem 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+
+        .color-option.selected {
+            border-color: #2c3e50;
+            transform: scale(1.1);
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .node {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: move;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .node.selected {
+            border: 3px solid #2c3e50;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .win-message {
+            display: none;
+            color: #27ae60;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .graph-container {
+                margin: 0.5rem;
+                padding: 0.5rem;
+            }
+
+            canvas {
+                height: 300px;
+            }
+
+            .controls {
+                margin: 0.5rem 0;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 200px;
+                padding: 0.6rem;
+            }
+
+            .color-option {
+                width: 25px;
+                height: 25px;
+            }
+        }
+
+        @media (hover: none) {
+            .color-option:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Graph Coloring Problem</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="graph-container">
+            <h2>Graph Coloring Challenge</h2>
+            <p>Color the graph so that no adjacent vertices have the same color. Try to use the minimum number of colors possible!</p>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div>Colors Used</div>
+                    <div class="stat-value" id="colorCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Vertices</div>
+                    <div class="stat-value" id="vertexCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Edges</div>
+                    <div class="stat-value" id="edgeCount">0</div>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="graphCanvas"></canvas>
+            </div>
+
+            <div class="color-palette" id="colorPalette"></div>
+
+            <div class="controls">
+                <button class="btn" onclick="resetGraph()">New Graph</button>
+                <button class="btn" onclick="checkSolution()">Check Solution</button>
+            </div>
+
+            <div class="win-message" id="winMessage">
+                Congratulations! You found a valid coloring!
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        let nodes = [];
+        let edges = [];
+        let selectedNode = null;
+        let selectedColor = null;
+        let isDragging = false;
+        let dragNode = null;
+        let colors = [
+            '#e74c3c', '#3498db', '#2ecc71', '#f1c40f',
+            '#9b59b6', '#e67e22', '#1abc9c', '#34495e'
+        ];
+
+        function initializeCanvas() {
+            // Set canvas size
+            function resizeCanvas() {
+                const container = canvas.parentElement;
+                canvas.width = container.clientWidth;
+                canvas.height = 400;
+                drawGraph();
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            // Initialize color palette
+            const palette = document.getElementById('colorPalette');
+            colors.forEach((color, index) => {
+                const colorOption = document.createElement('div');
+                colorOption.className = 'color-option';
+                colorOption.style.backgroundColor = color;
+                colorOption.addEventListener('click', () => selectColor(index));
+                palette.appendChild(colorOption);
+            });
+
+            // Generate random graph
+            generateRandomGraph();
+        }
+
+        function generateRandomGraph() {
+            nodes = [];
+            edges = [];
+            const numNodes = Math.floor(Math.random() * 5) + 5; // 5-10 nodes
+            const numEdges = Math.floor(Math.random() * (numNodes * 2)) + numNodes; // At least numNodes edges
+
+            // Create nodes
+            for (let i = 0; i < numNodes; i++) {
+                nodes.push({
+                    id: i,
+                    x: Math.random() * (canvas.width - 100) + 50,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    color: null
+                });
+            }
+
+            // Create edges
+            for (let i = 0; i < numEdges; i++) {
+                const node1 = Math.floor(Math.random() * numNodes);
+                let node2;
+                do {
+                    node2 = Math.floor(Math.random() * numNodes);
+                } while (node2 === node1 || edgeExists(node1, node2));
+                
+                edges.push({ from: node1, to: node2 });
+            }
+
+            updateStats();
+            drawGraph();
+        }
+
+        function edgeExists(node1, node2) {
+            return edges.some(edge => 
+                (edge.from === node1 && edge.to === node2) ||
+                (edge.from === node2 && edge.to === node1)
+            );
+        }
+
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw edges
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            edges.forEach(edge => {
+                const from = nodes[edge.from];
+                const to = nodes[edge.to];
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y);
+                ctx.lineTo(to.x, to.y);
+                ctx.stroke();
+            });
+
+            // Draw nodes
+            nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = node.color || '#3498db';
+                ctx.fill();
+                ctx.strokeStyle = selectedNode === node ? '#2c3e50' : '#fff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Draw node label
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(node.id + 1, node.x, node.y);
+            });
+        }
+
+        function selectColor(index) {
+            selectedColor = colors[index];
+            document.querySelectorAll('.color-option').forEach((option, i) => {
+                option.classList.toggle('selected', i === index);
+            });
+        }
+
+        function getNodeAtPosition(x, y) {
+            return nodes.find(node => {
+                const dx = node.x - x;
+                const dy = node.y - y;
+                return Math.sqrt(dx * dx + dy * dy) <= 20;
+            });
+        }
+
+        // Event Listeners
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const node = getNodeAtPosition(x, y);
+            if (node) {
+                if (selectedColor) {
+                    node.color = selectedColor;
+                    drawGraph();
+                    updateStats();
+                }
+                selectedNode = node;
+                isDragging = true;
+                dragNode = node;
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging && dragNode) {
+                const rect = canvas.getBoundingClientRect();
+                dragNode.x = e.clientX - rect.left;
+                dragNode.y = e.clientY - rect.top;
+                drawGraph();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            dragNode = null;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            dragNode = null;
+        });
+
+        // Touch events for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            const node = getNodeAtPosition(x, y);
+            if (node && selectedColor) {
+                node.color = selectedColor;
+                drawGraph();
+                updateStats();
+            }
+        });
+
+        function updateStats() {
+            const usedColors = new Set(nodes.map(node => node.color).filter(Boolean));
+            document.getElementById('colorCount').textContent = usedColors.size;
+            document.getElementById('vertexCount').textContent = nodes.length;
+            document.getElementById('edgeCount').textContent = edges.length;
+        }
+
+        function checkSolution() {
+            // Check if all nodes are colored
+            if (nodes.some(node => !node.color)) {
+                alert('Please color all vertices!');
+                return;
+            }
+
+            // Check if any adjacent vertices have the same color
+            const hasConflict = edges.some(edge => {
+                const from = nodes[edge.from];
+                const to = nodes[edge.to];
+                return from.color === to.color;
+            });
+
+            if (hasConflict) {
+                alert('Adjacent vertices cannot have the same color!');
+            } else {
+                document.getElementById('winMessage').style.display = 'block';
+            }
+        }
+
+        function resetGraph() {
+            nodes.forEach(node => node.color = null);
+            document.getElementById('winMessage').style.display = 'none';
+            generateRandomGraph();
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', initializeCanvas);
+    </script>
+</body>
+</html> 
