@@ -169,7 +169,10 @@
                 disk.style.bottom = `${(numDisks - i - 1) * 35}px`;
                 disk.style.backgroundColor = diskColors[i];
                 disk.setAttribute('data-size', i);
-                disk.addEventListener('click', () => handleDiskClick(disk));
+                disk.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent tower click when clicking disk
+                    handleDiskClick(disk);
+                });
                 tower1.appendChild(disk);
             }
 
@@ -182,9 +185,22 @@
 
         function handleDiskClick(disk) {
             if (selectedDisk === null) {
+                // Select the disk
                 selectedDisk = disk;
                 disk.style.opacity = '0.7';
+            } else if (selectedDisk === disk) {
+                // Deselect the disk
+                selectedDisk.style.opacity = '1';
+                selectedDisk = null;
             } else {
+                // Try to move the selected disk to the tower of the clicked disk
+                const targetTower = disk.parentElement;
+                if (canMove(selectedDisk, targetTower)) {
+                    moveDisk(selectedDisk, targetTower);
+                    moveCount++;
+                    document.getElementById('moveCount').textContent = moveCount;
+                    checkWin();
+                }
                 selectedDisk.style.opacity = '1';
                 selectedDisk = null;
             }
@@ -236,6 +252,7 @@
             moveCount = 0;
             document.getElementById('moveCount').textContent = '0';
             document.getElementById('winMessage').style.display = 'none';
+            selectedDisk = null;
             initializeGame();
         }
 
