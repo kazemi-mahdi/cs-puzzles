@@ -1,20 +1,20 @@
 /* Base styles */
 :root {
-    --primary-color: #ff6b35;
-    --secondary-color: #7b2cbf;
-    --accent-color: #ffd60a;
-    --success-color: #2ecc71;
-    --warning-color: #f1c40f;
-    --background-color: #fff5f0;
-    --text-color: #2d1b1b;
+    --primary-color: #bfd7ea;
+    --secondary-color: #a79283;
+    --accent-color: #f2a490;
+    --success-color: #d2b48c;
+    --warning-color: #f2a490;
+    --background-color: #f8edeb;
+    --text-color: #a79283;
     --card-background: #ffffff;
     --border-radius: 12px;
-    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --box-shadow: 0 4px 6px rgba(167, 146, 131, 0.1);
     --transition: all 0.3s ease;
-    --gradient-primary: linear-gradient(135deg, #ff6b35, #ff8c42);
-    --gradient-accent: linear-gradient(135deg, #7b2cbf, #9d4edd);
-    --gradient-success: linear-gradient(135deg, #2ecc71, #27ae60);
-    --gradient-warm: linear-gradient(135deg, #ff6b35, #ffd60a);
+    --gradient-primary: linear-gradient(135deg, #bfd7ea, #a79283);
+    --gradient-accent: linear-gradient(135deg, #f2a490, #d2b48c);
+    --gradient-success: linear-gradient(135deg, #d2b48c, #a79283);
+    --gradient-warm: linear-gradient(135deg, #f2a490, #d2b48c);
 }
 
 * {
@@ -30,28 +30,28 @@ body {
     background-color: var(--background-color);
     font-size: 16px;
     background-image: 
-        radial-gradient(circle at 100% 100%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 0% 0%, rgba(123, 44, 191, 0.1) 0%, transparent 50%);
+        radial-gradient(circle at 100% 100%, rgba(191, 215, 234, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 0% 0%, rgba(242, 164, 144, 0.2) 0%, transparent 50%);
     background-attachment: fixed;
 }
 
 /* Header styles */
 header {
-    background: var(--gradient-warm);
+    background: var(--gradient-primary);
     padding: 1rem;
     box-shadow: var(--box-shadow);
     position: sticky;
     top: 0;
     z-index: 1000;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(167, 146, 131, 0.1);
 }
 
 header h1 {
-    color: white;
+    color: var(--background-color);
     font-size: 2rem;
     margin-bottom: 0.5rem;
     text-align: center;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 2px 4px rgba(167, 146, 131, 0.1);
 }
 
 nav ul {
@@ -63,17 +63,17 @@ nav ul {
 }
 
 nav a {
-    color: white;
+    color: var(--background-color);
     text-decoration: none;
     font-weight: 500;
     padding: 0.5rem 1rem;
     border-radius: var(--border-radius);
     transition: var(--transition);
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(248, 237, 235, 0.15);
 }
 
 nav a:hover {
-    background-color: rgba(255, 255, 255, 0.25);
+    background-color: rgba(248, 237, 235, 0.25);
     transform: translateY(-2px);
 }
 
@@ -130,7 +130,7 @@ section h2::after {
     height: 100%;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(255, 107, 53, 0.1);
+    border: 1px solid rgba(167, 146, 131, 0.1);
 }
 
 .puzzle-card::before, .game-card::before {
@@ -151,12 +151,12 @@ section h2::after {
 
 .puzzle-card:hover, .game-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(255, 107, 53, 0.15);
-    border-color: rgba(255, 107, 53, 0.2);
+    box-shadow: 0 6px 12px rgba(167, 146, 131, 0.15);
+    border-color: rgba(167, 146, 131, 0.2);
 }
 
 .puzzle-card h3, .game-card h3 {
-    color: var(--primary-color);
+    color: var(--accent-color);
     font-size: 1.4rem;
     margin-bottom: 0.5rem;
 }
@@ -171,7 +171,7 @@ section h2::after {
     display: inline-block;
     padding: 0.8rem 1.5rem;
     background: var(--gradient-warm);
-    color: white;
+    color: var(--background-color);
     text-decoration: none;
     border-radius: var(--border-radius);
     border: none;
@@ -182,13 +182,13 @@ section h2::after {
     width: 100%;
     max-width: 200px;
     margin: 0 auto;
-    box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+    box-shadow: 0 2px 4px rgba(167, 146, 131, 0.2);
 }
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
-    background: linear-gradient(135deg, #ff8c42, #ffd60a);
+    box-shadow: 0 4px 8px rgba(167, 146, 131, 0.3);
+    background: linear-gradient(135deg, #f2a490, #d2b48c);
 }
 
 /* About section */
@@ -200,7 +200,7 @@ section h2::after {
     margin-top: 2rem;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(255, 107, 53, 0.1);
+    border: 1px solid rgba(167, 146, 131, 0.1);
 }
 
 #about::before {
@@ -220,8 +220,8 @@ section h2::after {
 
 /* Footer styles */
 footer {
-    background: var(--gradient-warm);
-    color: white;
+    background: var(--gradient-primary);
+    color: var(--background-color);
     text-align: center;
     padding: 1.5rem;
     margin-top: 2rem;
@@ -305,7 +305,7 @@ footer {
     }
 
     nav a:hover {
-        background-color: rgba(255, 255, 255, 0.15);
+        background-color: rgba(248, 237, 235, 0.15);
         transform: none;
     }
 }
@@ -328,7 +328,7 @@ footer {
 
 /* Accessibility improvements */
 :focus {
-    outline: 3px solid var(--primary-color);
+    outline: 3px solid var(--accent-color);
     outline-offset: 2px;
 }
 
