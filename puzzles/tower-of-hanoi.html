@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="../css/style.css">
     <style>
         .hanoi-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
+            max-width: 100%;
+            margin: 1rem auto;
+            padding: 1rem;
             background-color: #f8f9fa;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -18,55 +18,102 @@
         .tower-container {
             display: flex;
             justify-content: space-around;
-            margin: 2rem 0;
-            height: 300px;
+            margin: 1rem 0;
+            height: 250px;
             position: relative;
+            padding: 0 0.5rem;
         }
 
         .tower {
-            width: 20px;
-            height: 200px;
+            width: 15px;
+            height: 180px;
             background-color: #2c3e50;
             position: relative;
-            margin: 0 40px;
+            margin: 0 20px;
         }
 
         .tower::before {
             content: '';
             position: absolute;
             bottom: 0;
-            left: -40px;
-            width: 100px;
-            height: 20px;
+            left: -35px;
+            width: 85px;
+            height: 15px;
             background-color: #2c3e50;
         }
 
         .disk {
-            height: 30px;
+            height: 25px;
             background-color: #3498db;
-            border-radius: 15px;
+            border-radius: 12px;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
             cursor: pointer;
             transition: all 0.3s ease;
+            touch-action: manipulation;
         }
 
         .controls {
             text-align: center;
-            margin: 2rem 0;
+            margin: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
         }
 
         .moves {
-            margin-top: 1rem;
+            margin-top: 0.5rem;
             font-weight: bold;
+            font-size: 0.9rem;
         }
 
         .win-message {
             display: none;
             color: #27ae60;
-            font-size: 1.2rem;
-            margin-top: 1rem;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .tower-container {
+                height: 200px;
+            }
+
+            .tower {
+                width: 12px;
+                height: 150px;
+                margin: 0 15px;
+            }
+
+            .tower::before {
+                left: -25px;
+                width: 62px;
+                height: 12px;
+            }
+
+            .disk {
+                height: 20px;
+                border-radius: 10px;
+            }
+
+            .controls {
+                margin: 0.5rem 0;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 200px;
+                padding: 0.6rem;
+            }
+        }
+
+        @media (hover: none) {
+            .disk {
+                cursor: default;
+            }
         }
     </style>
 </head>
@@ -115,16 +162,22 @@
 
         function initializeGame() {
             const tower1 = document.getElementById('tower1');
-            for (let i = 0; i < numDisks; i++) {
+            for (let i = numDisks - 1; i >= 0; i--) {
                 const disk = document.createElement('div');
                 disk.className = 'disk';
-                disk.style.width = `${(numDisks - i) * 40}px`;
-                disk.style.bottom = `${i * 35}px`;
+                disk.style.width = `${(i + 1) * 40}px`;
+                disk.style.bottom = `${(numDisks - i - 1) * 35}px`;
                 disk.style.backgroundColor = diskColors[i];
-                disk.setAttribute('data-size', numDisks - i - 1);
+                disk.setAttribute('data-size', i);
                 disk.addEventListener('click', () => handleDiskClick(disk));
                 tower1.appendChild(disk);
             }
+
+            // Add click handlers for towers
+            const towers = document.querySelectorAll('.tower');
+            towers.forEach(tower => {
+                tower.addEventListener('click', () => handleTowerClick(tower));
+            });
         }
 
         function handleDiskClick(disk) {
@@ -132,16 +185,26 @@
                 selectedDisk = disk;
                 disk.style.opacity = '0.7';
             } else {
-                const targetTower = disk.parentElement;
-                const sourceTower = selectedDisk.parentElement;
-                
-                if (canMove(selectedDisk, targetTower)) {
-                    moveDisk(selectedDisk, targetTower);
+                selectedDisk.style.opacity = '1';
+                selectedDisk = null;
+            }
+        }
+
+        function handleTowerClick(tower) {
+            if (selectedDisk === null) {
+                // If no disk is selected, try to select the top disk of this tower
+                const topDisk = tower.querySelector('.disk');
+                if (topDisk) {
+                    handleDiskClick(topDisk);
+                }
+            } else {
+                // If a disk is selected, try to move it to this tower
+                if (canMove(selectedDisk, tower)) {
+                    moveDisk(selectedDisk, tower);
                     moveCount++;
                     document.getElementById('moveCount').textContent = moveCount;
                     checkWin();
                 }
-                
                 selectedDisk.style.opacity = '1';
                 selectedDisk = null;
             }
