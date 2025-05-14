@@ -3,28 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Binary Converter - CS Puzzles</title>
+    <title>Number Base Converter - CS Puzzles</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
         .converter-container {
             max-width: 600px;
-            margin: 2rem auto;
-            padding: 2rem;
+            margin: 1rem auto;
+            padding: 1rem;
             background-color: #f8f9fa;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .input-group {
-            margin-bottom: 1rem;
+        .conversion-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
 
-        input {
-            width: 100%;
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .input-row input {
+            flex: 1;
+        }
+
+        .input-row select {
+            width: 100px;
+        }
+
+        input, select {
             padding: 0.5rem;
-            margin-top: 0.5rem;
             border: 1px solid #ddd;
             border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
 
         .result {
@@ -34,11 +61,93 @@
             border-radius: 4px;
             display: none;
         }
+
+        .error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .base-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .conversion-history {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .calculation-steps {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+
+        .calculation-steps h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .step {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .step-number {
+            font-weight: bold;
+            color: #3498db;
+            margin-right: 0.5rem;
+        }
+
+        .step-formula {
+            font-family: monospace;
+            background-color: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            margin: 0.25rem 0;
+        }
+
+        .step-explanation {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .history-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 480px) {
+            .input-row {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .input-row select {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Binary Converter</h1>
+        <h1>Number Base Converter</h1>
         <nav>
             <ul>
                 <li><a href="../index.html">Home</a></li>
@@ -49,17 +158,49 @@
 
     <main>
         <div class="converter-container">
-            <h2>Convert Between Binary and Decimal</h2>
-            <div class="input-group">
-                <label for="decimal">Decimal Number:</label>
-                <input type="number" id="decimal" placeholder="Enter a decimal number">
+            <h2>Convert Between Number Bases</h2>
+            <p>Convert numbers between different bases (2-16). Supports binary, octal, decimal, and hexadecimal.</p>
+            
+            <div class="conversion-form">
+                <div class="input-group">
+                    <label for="fromNumber">Number to Convert:</label>
+                    <div class="input-row">
+                        <input type="text" id="fromNumber" placeholder="Enter a number">
+                        <select id="fromBase">
+                            <option value="2">Binary (2)</option>
+                            <option value="8">Octal (8)</option>
+                            <option value="10" selected>Decimal (10)</option>
+                            <option value="16">Hexadecimal (16)</option>
+                        </select>
+                    </div>
+                    <div id="fromError" class="error"></div>
+                    <div class="base-info" id="fromBaseInfo"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="toBase">Convert to Base:</label>
+                    <select id="toBase">
+                        <option value="2">Binary (2)</option>
+                        <option value="8">Octal (8)</option>
+                        <option value="10">Decimal (10)</option>
+                        <option value="16" selected>Hexadecimal (16)</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="convert()">Convert</button>
+
+                <div id="result" class="result"></div>
+
+                <div class="calculation-steps" id="calculationSteps">
+                    <h3>Calculation Steps</h3>
+                    <div id="stepsContent"></div>
+                </div>
+
+                <div class="conversion-history">
+                    <h3>Recent Conversions</h3>
+                    <div id="history"></div>
+                </div>
             </div>
-            <div class="input-group">
-                <label for="binary">Binary Number:</label>
-                <input type="text" id="binary" placeholder="Enter a binary number">
-            </div>
-            <button class="btn" onclick="convert()">Convert</button>
-            <div id="result" class="result"></div>
         </div>
     </main>
 
@@ -68,28 +209,202 @@
     </footer>
 
     <script>
-        function convert() {
-            const decimalInput = document.getElementById('decimal');
-            const binaryInput = document.getElementById('binary');
-            const resultDiv = document.getElementById('result');
+        const MAX_DECIMAL = 9007199254740991; // Maximum safe integer in JavaScript
+        const conversionHistory = [];
+        const MAX_HISTORY = 5;
 
-            if (decimalInput.value) {
-                const decimal = parseInt(decimalInput.value);
-                const binary = decimal.toString(2);
-                resultDiv.textContent = `Binary: ${binary}`;
-                resultDiv.style.display = 'block';
-            } else if (binaryInput.value) {
-                const binary = binaryInput.value;
-                if (/^[01]+$/.test(binary)) {
-                    const decimal = parseInt(binary, 2);
-                    resultDiv.textContent = `Decimal: ${decimal}`;
-                    resultDiv.style.display = 'block';
-                } else {
-                    resultDiv.textContent = 'Please enter a valid binary number (0s and 1s only)';
-                    resultDiv.style.display = 'block';
-                }
+        function updateBaseInfo() {
+            const fromBase = parseInt(document.getElementById('fromBase').value);
+            const info = document.getElementById('fromBaseInfo');
+            
+            switch(fromBase) {
+                case 2:
+                    info.textContent = 'Enter a binary number (0s and 1s only)';
+                    break;
+                case 8:
+                    info.textContent = 'Enter an octal number (0-7)';
+                    break;
+                case 10:
+                    info.textContent = 'Enter a decimal number (0-9)';
+                    break;
+                case 16:
+                    info.textContent = 'Enter a hexadecimal number (0-9 and A-F)';
+                    break;
             }
         }
+
+        function validateInput(number, base) {
+            const error = document.getElementById('fromError');
+            error.style.display = 'none';
+
+            if (!number) {
+                error.textContent = 'Please enter a number';
+                error.style.display = 'block';
+                return false;
+            }
+
+            const validChars = {
+                2: /^[01]+$/,
+                8: /^[0-7]+$/,
+                10: /^\d+$/,
+                16: /^[0-9A-Fa-f]+$/
+            };
+
+            if (!validChars[base].test(number)) {
+                error.textContent = `Invalid characters for base ${base}`;
+                error.style.display = 'block';
+                return false;
+            }
+
+            const decimal = parseInt(number, base);
+            if (decimal > MAX_DECIMAL) {
+                error.textContent = 'Number too large to convert';
+                error.style.display = 'block';
+                return false;
+            }
+
+            return true;
+        }
+
+        function convert() {
+            const fromNumber = document.getElementById('fromNumber').value.toUpperCase();
+            const fromBase = parseInt(document.getElementById('fromBase').value);
+            const toBase = parseInt(document.getElementById('toBase').value);
+            const resultDiv = document.getElementById('result');
+            const stepsDiv = document.getElementById('calculationSteps');
+            const stepsContent = document.getElementById('stepsContent');
+
+            if (!validateInput(fromNumber, fromBase)) {
+                resultDiv.style.display = 'none';
+                stepsDiv.style.display = 'none';
+                return;
+            }
+
+            const decimal = parseInt(fromNumber, fromBase);
+            let converted;
+
+            switch(toBase) {
+                case 2:
+                    converted = decimal.toString(2);
+                    break;
+                case 8:
+                    converted = decimal.toString(8);
+                    break;
+                case 10:
+                    converted = decimal.toString();
+                    break;
+                case 16:
+                    converted = decimal.toString(16).toUpperCase();
+                    break;
+            }
+
+            const result = `${fromNumber} (base ${fromBase}) = ${converted} (base ${toBase})`;
+            resultDiv.textContent = result;
+            resultDiv.style.display = 'block';
+
+            // Generate calculation steps
+            let steps = [];
+            
+            if (fromBase !== 10) {
+                // Step 1: Convert to decimal
+                steps.push({
+                    number: 1,
+                    title: "Convert to Decimal",
+                    formula: `${fromNumber} (base ${fromBase}) → Decimal`,
+                    explanation: `Each digit is multiplied by ${fromBase} raised to its position power (from right to left, starting at 0)`,
+                    calculation: generateDecimalConversionSteps(fromNumber, fromBase)
+                });
+            }
+
+            if (toBase !== 10) {
+                // Step 2: Convert from decimal to target base
+                steps.push({
+                    number: fromBase === 10 ? 1 : 2,
+                    title: `Convert to Base ${toBase}`,
+                    formula: `${decimal} (decimal) → Base ${toBase}`,
+                    explanation: `Repeatedly divide by ${toBase} and collect remainders from bottom to top`,
+                    calculation: generateBaseConversionSteps(decimal, toBase)
+                });
+            }
+
+            // Display steps
+            stepsContent.innerHTML = steps.map(step => `
+                <div class="step">
+                    <div><span class="step-number">Step ${step.number}:</span> ${step.title}</div>
+                    <div class="step-formula">${step.formula}</div>
+                    <div class="step-explanation">${step.explanation}</div>
+                    <div class="step-formula">${step.calculation}</div>
+                </div>
+            `).join('');
+            
+            stepsDiv.style.display = 'block';
+
+            // Add to history
+            conversionHistory.unshift({
+                from: `${fromNumber} (base ${fromBase})`,
+                to: `${converted} (base ${toBase})`,
+                timestamp: new Date()
+            });
+
+            if (conversionHistory.length > MAX_HISTORY) {
+                conversionHistory.pop();
+            }
+
+            updateHistory();
+        }
+
+        function generateDecimalConversionSteps(number, base) {
+            const digits = number.split('').reverse();
+            let steps = [];
+            let decimal = 0;
+            
+            digits.forEach((digit, index) => {
+                const value = parseInt(digit, base);
+                const power = Math.pow(base, index);
+                const step = `${digit} × ${base}^${index} = ${value} × ${power} = ${value * power}`;
+                steps.push(step);
+                decimal += value * power;
+            });
+            
+            steps.push(`Sum: ${steps.join(' + ')} = ${decimal}`);
+            return steps.join('<br>');
+        }
+
+        function generateBaseConversionSteps(decimal, base) {
+            let steps = [];
+            let num = decimal;
+            let remainders = [];
+            
+            while (num > 0) {
+                const remainder = num % base;
+                remainders.unshift(remainder);
+                steps.push(`${num} ÷ ${base} = ${Math.floor(num / base)} remainder ${remainder}`);
+                num = Math.floor(num / base);
+            }
+            
+            if (steps.length === 0) {
+                steps.push("0");
+            }
+            
+            steps.push(`Result: ${remainders.join('')}`);
+            return steps.join('<br>');
+        }
+
+        function updateHistory() {
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = conversionHistory.map(item => `
+                <div class="history-item">
+                    <div>${item.from} → ${item.to}</div>
+                    <small>${item.timestamp.toLocaleTimeString()}</small>
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateBaseInfo();
+            document.getElementById('fromBase').addEventListener('change', updateBaseInfo);
+        });
     </script>
 </body>
 </html> 
