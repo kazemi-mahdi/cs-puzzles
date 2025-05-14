@@ -208,8 +208,13 @@
 
         function handleDiskClick(disk) {
             if (selectedDisk === null) {
-                selectedDisk = disk;
-                disk.classList.add('selected');
+                // Only allow selecting the top disk of a tower
+                const tower = disk.parentElement;
+                const disks = tower.querySelectorAll('.disk');
+                if (disk === disks[disks.length - 1]) {
+                    selectedDisk = disk;
+                    disk.classList.add('selected');
+                }
             } else if (selectedDisk === disk) {
                 selectedDisk.classList.remove('selected');
                 selectedDisk = null;
@@ -230,7 +235,8 @@
 
         function handleTowerClick(tower) {
             if (selectedDisk === null) {
-                const topDisk = tower.querySelector('.disk');
+                // Only allow selecting the top disk of a tower
+                const topDisk = tower.querySelector('.disk:last-child');
                 if (topDisk) {
                     handleDiskClick(topDisk);
                 }
@@ -249,7 +255,7 @@
         }
 
         function canMove(disk, targetTower) {
-            const topDisk = targetTower.querySelector('.disk');
+            const topDisk = targetTower.querySelector('.disk:last-child');
             if (!topDisk) return true;
             return parseInt(disk.getAttribute('data-size')) < parseInt(topDisk.getAttribute('data-size'));
         }
