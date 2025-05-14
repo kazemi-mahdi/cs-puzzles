@@ -257,9 +257,16 @@
         function moveDisk(disk, targetTower) {
             const disks = targetTower.querySelectorAll('.disk');
             const newBottom = disks.length * 35;
+            
+            // Remove the disk from its current parent
+            const currentParent = disk.parentElement;
+            currentParent.removeChild(disk);
+            
+            // Add the disk to the target tower
             disk.classList.add('moving');
             disk.style.bottom = `${newBottom}px`;
             targetTower.appendChild(disk);
+            
             setTimeout(() => disk.classList.remove('moving'), 500);
         }
 
@@ -318,14 +325,37 @@
                 const [source, target] = moves[currentMove];
                 const sourceTower = document.getElementById(`tower${source}`);
                 const targetTower = document.getElementById(`tower${target}`);
-                const disk = sourceTower.querySelector('.disk');
                 
-                if (disk) {
-                    moveDisk(disk, targetTower);
-                    moveCount++;
-                    document.getElementById('moveCount').textContent = moveCount;
-                    checkWin();
+                // Get the top disk from the source tower
+                const disks = sourceTower.querySelectorAll('.disk');
+                if (disks.length === 0) {
+                    currentMove++;
+                    setTimeout(animateMove, 1000);
+                    return;
                 }
+                
+                const disk = disks[disks.length - 1];
+                
+                // Check if the move is valid
+                const targetDisks = targetTower.querySelectorAll('.disk');
+                if (targetDisks.length > 0) {
+                    const topTargetDisk = targetDisks[targetDisks.length - 1];
+                    const diskSize = parseInt(disk.getAttribute('data-size'));
+                    const targetDiskSize = parseInt(topTargetDisk.getAttribute('data-size'));
+                    
+                    if (diskSize > targetDiskSize) {
+                        // Invalid move, skip to next move
+                        currentMove++;
+                        setTimeout(animateMove, 1000);
+                        return;
+                    }
+                }
+                
+                // Perform the move
+                moveDisk(disk, targetTower);
+                moveCount++;
+                document.getElementById('moveCount').textContent = moveCount;
+                checkWin();
                 
                 currentMove++;
                 setTimeout(animateMove, 1000);
