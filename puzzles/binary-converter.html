@@ -247,11 +247,19 @@
                 2: /^[01]+$/,
                 8: /^[0-7]+$/,
                 10: /^\d+$/,
-                16: /^[0-9A-Fa-f]+$/
+                16: /^[0-9A-Fa-f]+$/  // Case-insensitive hex validation
             };
 
             if (!validChars[base].test(number)) {
-                error.textContent = `Invalid characters for base ${base}`;
+                let errorMessage = `Invalid characters for base ${base}`;
+                if (base === 16) {
+                    errorMessage = 'Invalid hexadecimal number. Use digits 0-9 and letters A-F';
+                } else if (base === 2) {
+                    errorMessage = 'Invalid binary number. Use only 0 and 1';
+                } else if (base === 8) {
+                    errorMessage = 'Invalid octal number. Use digits 0-7';
+                }
+                error.textContent = errorMessage;
                 error.style.display = 'block';
                 return false;
             }
@@ -377,8 +385,9 @@
             
             while (num > 0) {
                 const remainder = num % base;
-                remainders.unshift(remainder);
-                steps.push(`${num} ÷ ${base} = ${Math.floor(num / base)} remainder ${remainder}`);
+                const remainderStr = remainder >= 10 ? remainder.toString(16).toUpperCase() : remainder.toString();
+                remainders.unshift(remainderStr);
+                steps.push(`${num} ÷ ${base} = ${Math.floor(num / base)} remainder ${remainderStr}`);
                 num = Math.floor(num / base);
             }
             

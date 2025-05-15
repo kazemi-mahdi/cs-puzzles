@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eight Puzzle - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .puzzle-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .puzzle-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+
+        .puzzle-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .puzzle-header h2 {
+            color: var(--secondary-color);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .puzzle-header p {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .puzzle-content {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .board-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            width: 400px;
+            aspect-ratio: 1;
+            padding: 0.75rem;
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .tile {
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+            touch-action: manipulation;
+            aspect-ratio: 1;
+            box-shadow: var(--box-shadow);
+        }
+
+        .tile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .tile.empty {
+            background-color: transparent;
+            box-shadow: none;
+            cursor: default;
+        }
+
+        .tile.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-width: 250px;
+        }
+
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.5rem;
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .stat-item h3 {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item p {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            min-width: 200px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .win-message {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            display: none;
+        }
+
+        .win-message h3 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .win-message p {
+            color: var(--text-color);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 900px) {
+            .puzzle-content {
+                grid-template-columns: 1fr;
+            }
+
+            .game-info {
+                order: -1;
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .stats {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .stat-item {
+                flex: 1;
+                min-width: 150px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .puzzle-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .puzzle-header h2 {
+                font-size: 1.6rem;
+            }
+
+            .puzzle-header p {
+                font-size: 1rem;
+            }
+
+            .board {
+                width: 300px;
+            }
+
+            .tile {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .puzzle-container {
+                margin: 0.5rem;
+                padding: 1rem;
+            }
+
+            .board {
+                width: 250px;
+            }
+
+            .tile {
+                font-size: 1.5rem;
+            }
+
+            .stat-item h3 {
+                font-size: 1rem;
+            }
+
+            .stat-item p {
+                font-size: 1.4rem;
+            }
+
+            .win-message {
+                padding: 1rem;
+            }
+
+            .win-message h3 {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) {
+            .tile:hover {
+                transform: none;
+            }
+
+            .tile:active {
+                transform: scale(0.95);
+            }
+
+            .btn:hover {
+                transform: none;
+            }
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tile {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Eight Puzzle</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="puzzle-container">
+            <div class="puzzle-header">
+                <h2>Sliding Puzzle</h2>
+                <p>Arrange the tiles in order by sliding them into the empty space. The goal is to get the numbers in order from 1 to 8 with the empty space in the bottom right.</p>
+            </div>
+            
+            <div class="puzzle-content">
+                <div class="board-container">
+                    <div class="board" id="puzzleBoard"></div>
+                </div>
+
+                <div class="game-info">
+                    <div class="stats">
+                        <div class="stat-item">
+                            <h3>Moves</h3>
+                            <p id="moveCount">0</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3>Time</h3>
+                            <p id="timeCount">0:00</p>
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <button class="btn" onclick="resetGame()">New Game</button>
+                        <button class="btn" onclick="shuffleBoard()">Shuffle</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="win-message" id="winMessage">
+                <h3>Congratulations!</h3>
+                <p>You solved the puzzle!</p>
+                <p>Moves: <span id="finalMoves">0</span></p>
+                <p>Time: <span id="finalTime">0:00</span></p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let board = [];
+        let emptyPos = { row: 2, col: 2 };
+        let moveCount = 0;
+        let startTime = null;
+        let timerInterval = null;
+        const size = 3;
+
+        function initializeBoard() {
+            board = [];
+            for (let i = 0; i < size; i++) {
+                board[i] = [];
+                for (let j = 0; j < size; j++) {
+                    const value = i * size + j + 1;
+                    board[i][j] = value === 9 ? 0 : value;
+                }
+            }
+            emptyPos = { row: 2, col: 2 };
+            renderBoard();
+        }
+
+        function renderBoard() {
+            const puzzleBoard = document.getElementById('puzzleBoard');
+            puzzleBoard.innerHTML = '';
+            
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const tile = document.createElement('div');
+                    tile.className = `tile ${board[i][j] === 0 ? 'empty' : ''}`;
+                    tile.textContent = board[i][j] || '';
+                    tile.dataset.row = i;
+                    tile.dataset.col = j;
+                    
+                    if (board[i][j] !== 0) {
+                        tile.addEventListener('click', () => handleTileClick(i, j));
+                    }
+                    
+                    puzzleBoard.appendChild(tile);
+                }
+            }
+        }
+
+        function handleTileClick(row, col) {
+            if (isAdjacent(row, col, emptyPos.row, emptyPos.col)) {
+                swapTiles(row, col, emptyPos.row, emptyPos.col);
+                moveCount++;
+                document.getElementById('moveCount').textContent = moveCount;
+                checkWin();
+            }
+        }
+
+        function isAdjacent(row1, col1, row2, col2) {
+            return (Math.abs(row1 - row2) === 1 && col1 === col2) ||
+                   (Math.abs(col1 - col2) === 1 && row1 === row2);
+        }
+
+        function swapTiles(row1, col1, row2, col2) {
+            const temp = board[row1][col1];
+            board[row1][col1] = board[row2][col2];
+            board[row2][col2] = temp;
+            emptyPos = { row: row1, col: col1 };
+            renderBoard();
+        }
+
+        function shuffleBoard() {
+            const moves = 1000; // Number of random moves to shuffle
+            for (let i = 0; i < moves; i++) {
+                const adjacentTiles = getAdjacentTiles(emptyPos.row, emptyPos.col);
+                const randomTile = adjacentTiles[Math.floor(Math.random() * adjacentTiles.length)];
+                swapTiles(randomTile.row, randomTile.col, emptyPos.row, emptyPos.col);
+            }
+            moveCount = 0;
+            document.getElementById('moveCount').textContent = '0';
+            startTimer();
+        }
+
+        function getAdjacentTiles(row, col) {
+            const adjacent = [];
+            if (row > 0) adjacent.push({ row: row - 1, col });
+            if (row < size - 1) adjacent.push({ row: row + 1, col });
+            if (col > 0) adjacent.push({ row, col: col - 1 });
+            if (col < size - 1) adjacent.push({ row, col: col + 1 });
+            return adjacent;
+        }
+
+        function checkWin() {
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const expected = i * size + j + 1;
+                    if (board[i][j] !== (expected === 9 ? 0 : expected)) {
+                        return;
+                    }
+                }
+            }
+            // Puzzle is solved
+            clearInterval(timerInterval);
+            document.getElementById('winMessage').style.display = 'block';
+            document.getElementById('finalMoves').textContent = moveCount;
+            document.getElementById('finalTime').textContent = document.getElementById('timeCount').textContent;
+        }
+
+        function startTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            startTime = Date.now();
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timeCount').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function resetGame() {
+            initializeBoard();
+            moveCount = 0;
+            document.getElementById('moveCount').textContent = '0';
+            document.getElementById('winMessage').style.display = 'none';
+            startTimer();
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeBoard();
+            startTimer();
+        });
+    </script>
+</body>
+</html> 
