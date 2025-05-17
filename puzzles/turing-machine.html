@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turing Machine Visualization - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/turing-machine.css">
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Turing Machine Visualization</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="turing-machine">
+            <div class="turing-machine-container">
+                <div id="state-diagram"></div>
+                <div id="tape-container"></div>
+                <div class="controls">
+                    <button id="step-btn">Step</button>
+                    <button id="run-btn">Run</button>
+                    <button id="reset-btn">Reset</button>
+                    <input type="text" id="input-string" placeholder="Enter input string">
+                    <button id="load-input-btn">Load Input</button>
+                </div>
+                <div class="editor-container">
+                    <textarea id="tm-code" rows="10" cols="50" placeholder="Enter Turing Machine definition here..."></textarea>
+                    <button id="load-example-btn">Load Example</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <!-- Load core components first -->
+    <script src="../js/turing-machine/TuringMachine.js"></script>
+    <script src="../js/turing-machine/tape/Tape.js"></script>
+    <script src="../js/turing-machine/tape/TapeViz.js"></script>
+    <script src="../js/turing-machine/state-diagram/StateViz.js"></script>
+    <!-- Load main application last -->
+    <script src="../js/turing-machine/main.js"></script>
+</body>
+</html> 
