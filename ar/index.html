@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS Puzzles AR Experience</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+    <!-- AR Scene -->
+    <a-scene embedded vr-mode-ui="enabled: false" renderer="logarithmicDepthBuffer: true" arjs="sourceType: webcam; debugUIEnabled: false">
+        <!-- Marker -->
+        <a-marker type="pattern" url="markers/cs-marker.patt">
+            <!-- Test Cube -->
+            <a-box position="0 0.5 0" 
+                   rotation="0 45 0" 
+                   color="#4CC3D9"
+                   animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
+            </a-box>
+
+            <!-- Timeline parent entity -->
+            <a-entity id="timeline" position="0 0 0" rotation="-90 0 0">
+                <!-- Timeline blocks will be added dynamically via JavaScript -->
+            </a-entity>
+
+            <!-- Billboard booth label -->
+            <a-text value="📍 Booth: Room A14" position="0 0.25 0" look-at="[camera]" align="center" scale="0.5 0.5 0.5"></a-text>
+        </a-marker>
+
+        <!-- Camera -->
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <!-- Fallback message (hidden by default) -->
+    <div id="fallback" class="hidden">
+        <p>Your browser can't show AR. Tap to explore the puzzles instead.</p>
+    </div>
+
+    <!-- Enter Site button -->
+    <button id="enter-site">Enter Site</button>
+</body>
+</html> 
