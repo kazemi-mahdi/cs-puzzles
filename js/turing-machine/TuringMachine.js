@@ -9,15 +9,55 @@
  * @param {state} startState  The state to start in.
  * @param         tape        The tape to use.
  */
-function TuringMachine(transition, startState, tape) {
-  this.transition = transition;
-  this.state = startState;
-  this.tape = tape;
-}
 
-TuringMachine.prototype.toString = function () {
-  return String(this.state) + '\n' + String(this.tape);
-};
+// Constants for tape movement
+const MoveHead = Object.freeze({
+    left: 'L',
+    right: 'R'
+});
+
+class TuringMachine {
+    constructor(states, alphabet, transitions, startState, acceptStates) {
+        this.states = states;
+        this.alphabet = alphabet;
+        this.transitions = transitions;
+        this.currentState = startState;
+        this.acceptStates = acceptStates;
+        this.isHalted = false;
+    }
+
+    step(tape) {
+        if (this.isHalted) return false;
+
+        const currentSymbol = tape.read();
+        const transition = this.transitions[this.currentState]?.[currentSymbol];
+
+        if (!transition) {
+            this.isHalted = true;
+            return false;
+        }
+
+        // Execute transition
+        tape.write(transition.write);
+        tape.move(transition.move);
+        this.currentState = transition.nextState;
+
+        return true;
+    }
+
+    isAccepting() {
+        return this.isHalted && this.acceptStates.includes(this.currentState);
+    }
+
+    reset() {
+        this.currentState = this.startState;
+        this.isHalted = false;
+    }
+
+    toString() {
+        return `${this.currentState}\n${this.tape}`;
+    }
+}
 
 /**
  * Step to the next configuration according to the transition function.
@@ -54,11 +94,6 @@ function move(tape, direction) {
     default: throw new TypeError('not a valid tape movement: ' + String(direction));
   }
 }
-
-var MoveHead = Object.freeze({
-  left:  {toString: function () { return 'L'; } },
-  right: {toString: function () { return 'R'; } }
-});
 
 var MoveTape = Object.freeze({left: MoveHead.right, right: MoveHead.left});
 
