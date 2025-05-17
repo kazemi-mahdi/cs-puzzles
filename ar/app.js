@@ -37,21 +37,72 @@ const timelineEvents = [
     }
 ];
 
-// Check for AR support
+// Update status message
+function updateStatus(elementId, message, isError = false) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = message;
+        element.style.color = isError ? '#FF6B6B' : element.style.color;
+    }
+}
+
+// Check for AR support with detailed logging
 async function checkARSupport() {
-    const hasWebXR = 'xr' in navigator;
-    const hasMediaDevices = 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices;
+    updateStatus('browser-info', 'Checking browser support...');
     
-    if (!hasWebXR || !hasMediaDevices) {
+    // Check for iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    
+    if (isIOS) {
+        if (!isSafari) {
+            const message = 'Please use Safari on iOS for the best AR experience';
+            updateStatus('browser-info', message, true);
+            document.getElementById('fallback-reason').textContent = message;
+            document.body.classList.add('fallback');
+            document.getElementById('fallback').classList.remove('hidden');
+            return false;
+        }
+        updateStatus('browser-info', 'iOS Safari detected - AR should work!');
+    }
+    
+    // Check for WebXR
+    const hasWebXR = 'xr' in navigator;
+    if (!hasWebXR) {
+        const message = 'WebXR not supported in this browser';
+        updateStatus('browser-info', message, true);
+        document.getElementById('fallback-reason').textContent = message;
+        document.body.classList.add('fallback');
+        document.getElementById('fallback').classList.remove('hidden');
+        return false;
+    }
+    
+    // Check for getUserMedia
+    const hasMediaDevices = 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices;
+    if (!hasMediaDevices) {
+        const message = 'Camera access not supported in this browser';
+        updateStatus('browser-info', message, true);
+        document.getElementById('fallback-reason').textContent = message;
         document.body.classList.add('fallback');
         document.getElementById('fallback').classList.remove('hidden');
         return false;
     }
     
     try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
+        updateStatus('camera-status', 'Requesting camera access...');
+        await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 960 }
+            } 
+        });
+        updateStatus('camera-status', 'Camera access granted!');
         return true;
     } catch (err) {
+        const message = `Camera access error: ${err.message}`;
+        updateStatus('camera-status', message, true);
+        document.getElementById('fallback-reason').textContent = message;
         document.body.classList.add('fallback');
         document.getElementById('fallback').classList.remove('hidden');
         return false;
@@ -112,6 +163,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (hasAR) {
         createTimeline();
+        
+        // Add marker detection events
+        const marker = document.getElementById('marker');
+        if (marker) {
+            marker.addEventListener('markerFound', () => {
+                updateStatus('marker-status', 'Marker detected!');
+            });
+            
+            marker.addEventListener('markerLost', () => {
+                updateStatus('marker-status', 'Looking for marker...');
+            });
+        }
         
         // Add click handlers for timeline blocks
         document.querySelectorAll('[data-link]').forEach(el => {

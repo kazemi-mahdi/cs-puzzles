@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CS Puzzles AR Experience</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -10,10 +10,30 @@
     <script src="app.js"></script>
 </head>
 <body>
+    <!-- Status Messages -->
+    <div id="status-messages" class="status-container">
+        <div id="browser-info"></div>
+        <div id="camera-status"></div>
+        <div id="marker-status"></div>
+    </div>
+
     <!-- AR Scene -->
-    <a-scene embedded vr-mode-ui="enabled: false" renderer="logarithmicDepthBuffer: true" arjs="sourceType: webcam; debugUIEnabled: false">
+    <a-scene embedded 
+             vr-mode-ui="enabled: false" 
+             renderer="logarithmicDepthBuffer: true; precision: medium"
+             arjs="sourceType: webcam; 
+                   debugUIEnabled: false;
+                   detectionMode: mono_and_matrix;
+                   matrixCodeType: 3x3;
+                   sourceWidth: 1280;
+                   sourceHeight: 960;
+                   displayWidth: 1280;
+                   displayHeight: 960;">
         <!-- Marker -->
-        <a-marker type="pattern" url="markers/cs-marker.patt">
+        <a-marker type="pattern" 
+                  url="markers/cs-marker.patt"
+                  emitevents="true"
+                  id="marker">
             <!-- Test Cube -->
             <a-box position="0 0.5 0" 
                    rotation="0 45 0" 
@@ -27,7 +47,12 @@
             </a-entity>
 
             <!-- Billboard booth label -->
-            <a-text value="📍 Booth: Room A14" position="0 0.25 0" look-at="[camera]" align="center" scale="0.5 0.5 0.5"></a-text>
+            <a-text value="📍 Booth: Room A14" 
+                    position="0 0.25 0" 
+                    look-at="[camera]" 
+                    align="center" 
+                    scale="0.5 0.5 0.5">
+            </a-text>
         </a-marker>
 
         <!-- Camera -->
@@ -37,6 +62,7 @@
     <!-- Fallback message (hidden by default) -->
     <div id="fallback" class="hidden">
         <p>Your browser can't show AR. Tap to explore the puzzles instead.</p>
+        <p id="fallback-reason" class="fallback-reason"></p>
     </div>
 
     <!-- Enter Site button -->
