@@ -1,215 +1,179 @@
-// Timeline events data
-const timelineEvents = [
-    {
-        title: "Ada Lovelace",
-        year: "1843",
-        description: "First Computer Program",
-        link: "/puzzles/ada-lovelace.html",
-        color: "#FF6B6B"
-    },
-    {
-        title: "Alan Turing",
-        year: "1936",
-        description: "Turing Machine",
-        link: "/puzzles/alan-turing.html",
-        color: "#4ECDC4"
-    },
-    {
-        title: "Grace Hopper",
-        year: "1952",
-        description: "First Compiler",
-        link: "/puzzles/grace-hopper.html",
-        color: "#45B7D1"
-    },
-    {
-        title: "Tim Berners-Lee",
-        year: "1989",
-        description: "World Wide Web",
-        link: "/puzzles/tim-berners-lee.html",
-        color: "#96CEB4"
-    },
-    {
-        title: "Quantum Computing",
-        year: "2019",
-        description: "Quantum Supremacy",
-        link: "/puzzles/quantum-computing.html",
-        color: "#FFEEAD"
-    }
-];
-
-// Update status message
-function updateStatus(elementId, message, isError = false) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.textContent = message;
-        element.style.color = isError ? '#FF6B6B' : element.style.color;
-    }
-}
-
-// Check for AR support with detailed logging
-async function checkARSupport() {
-    updateStatus('browser-info', 'Checking browser support...');
-    
-    // Check for iOS
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    
-    if (isIOS) {
-        if (!isSafari) {
-            const message = 'Please use Safari on iOS for the best AR experience';
-            updateStatus('browser-info', message, true);
-            document.getElementById('fallback-reason').textContent = message;
-            document.body.classList.add('fallback');
-            document.getElementById('fallback').classList.remove('hidden');
-            return false;
-        }
-        updateStatus('browser-info', 'iOS Safari detected - AR should work!');
-    }
-    
-    // Check for WebXR with more detailed feature detection
-    if (!navigator.xr) {
-        const message = 'WebXR not supported in this browser';
-        updateStatus('browser-info', message, true);
-        document.getElementById('fallback-reason').textContent = message;
-        document.body.classList.add('fallback');
-        document.getElementById('fallback').classList.remove('hidden');
+// app.js – rewritten with modular timeline, click navigation, and robust fallback
+(() => {
+    'use strict';
+  
+    /* ---------------------------- Config ---------------------------- */
+    // Timeline data – replace / add events or colors as you like
+    const timelineData = [
+      { year: '1936', title: 'Turing Machine', color: '#FFC65D', link: '/puzzles/turing.html' },
+      { year: '1956', title: 'Dartmouth Workshop', color: '#7BC8A4', link: '/puzzles/dartmouth.html' },
+      { year: '1969', title: 'ARPANET', color: '#4CC3D9', link: '/puzzles/arpanet.html' },
+      { year: '1997', title: 'Deep Blue vs Kasparov', color: '#FF6B6B', link: '/puzzles/deepblue.html' },
+      { year: '2012', title: 'AlexNet Breakthrough', color: '#A27CE6', link: '/puzzles/alexnet.html' }
+    ];
+  
+    /* ------------------------- Cached Elements ---------------------- */
+    const markerEl       = document.getElementById('marker');     // <a-marker>
+    const timelineParent = document.getElementById('timeline');   // <a-entity>
+    const enterBtn       = document.getElementById('enter-site'); // bottom button
+    const fallbackWrap   = document.getElementById('fallback');   // fallback overlay
+    const fallbackMsg    = document.getElementById('fallback-reason');
+    const statusContainer = document.getElementById('status-messages');
+  
+    /* ------------------------ Support Check ------------------------- */
+    async function checkDeviceSupport() {
+      // Check for iOS Safari
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      
+      if (isIOS && !isSafari) {
+        showFallback('Please use Safari on iOS for the best AR experience');
         return false;
-    }
+      }
 
-    // Check for AR features
-    try {
-        const isSupported = await navigator.xr.isSessionSupported('immersive-ar');
-        if (!isSupported) {
-            const message = 'AR features not supported in this browser';
-            updateStatus('browser-info', message, true);
-            document.getElementById('fallback-reason').textContent = message;
-            document.body.classList.add('fallback');
-            document.getElementById('fallback').classList.remove('hidden');
-            return false;
-        }
-    } catch (err) {
-        console.warn('Error checking AR support:', err);
-        // Continue anyway as some browsers might support AR.js without WebXR
-    }
-    
-    // Check for getUserMedia with more specific requirements
-    const hasMediaDevices = 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices;
-    if (!hasMediaDevices) {
-        const message = 'Camera access not supported in this browser';
-        updateStatus('browser-info', message, true);
-        document.getElementById('fallback-reason').textContent = message;
-        document.body.classList.add('fallback');
-        document.getElementById('fallback').classList.remove('hidden');
+      // Check for WebXR support
+      if (!navigator.xr) {
+        console.warn('WebXR not supported, falling back to AR.js');
+      }
+
+      // Check camera support
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showFallback('Camera API not supported on this device.');
         return false;
-    }
-    
-    try {
+      }
+
+      try {
         updateStatus('camera-status', 'Requesting camera access...');
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'environment',
-                width: { ideal: 1280 },
-                height: { ideal: 960 }
-            } 
+        const testStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 960 }
+          } 
         });
-        
-        // Stop the stream immediately as we just needed to check access
-        stream.getTracks().forEach(track => track.stop());
-        
+        testStream.getTracks().forEach(t => t.stop()); // close test stream
         updateStatus('camera-status', 'Camera access granted!');
         return true;
-    } catch (err) {
-        const message = `Camera access error: ${err.message}`;
-        updateStatus('camera-status', message, true);
-        document.getElementById('fallback-reason').textContent = message;
-        document.body.classList.add('fallback');
-        document.getElementById('fallback').classList.remove('hidden');
+      } catch (err) {
+        showFallback(`Unable to access the camera: ${err.message}`);
         return false;
+      }
     }
-}
+  
+    function showFallback(reason) {
+      document.body.classList.add('fallback');
+      fallbackMsg.textContent = reason;
+      fallbackWrap.classList.remove('hidden');
+      updateStatus('browser-info', reason, true);
+    }
 
-// Create timeline blocks
-function createTimeline() {
-    const timeline = document.getElementById('timeline');
-    const spacing = 1.5; // Space between blocks
-    const startX = -(timelineEvents.length - 1) * spacing / 2;
-
-    timelineEvents.forEach((event, index) => {
-        const x = startX + index * spacing;
-        
-        // Create block
-        const block = document.createElement('a-box');
-        block.setAttribute('position', `${x} 0 0`);
-        block.setAttribute('width', '1');
-        block.setAttribute('height', '0.5');
-        block.setAttribute('depth', '0.5');
-        block.setAttribute('color', event.color);
-        block.setAttribute('data-link', event.link);
-        block.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 30000');
-        block.setAttribute('cursor', 'rayOrigin: mouse');
-        
-        // Create title text
-        const title = document.createElement('a-text');
-        title.setAttribute('value', event.title);
-        title.setAttribute('position', '0 0.4 0.26');
-        title.setAttribute('align', 'center');
-        title.setAttribute('scale', '0.5 0.5 0.5');
-        block.appendChild(title);
-        
-        // Create year text
-        const year = document.createElement('a-text');
-        year.setAttribute('value', event.year);
-        year.setAttribute('position', '0 0.2 0.26');
-        year.setAttribute('align', 'center');
-        year.setAttribute('scale', '0.4 0.4 0.4');
-        block.appendChild(year);
-        
-        // Create description text
-        const desc = document.createElement('a-text');
-        desc.setAttribute('value', event.description);
-        desc.setAttribute('position', '0 0 0.26');
-        desc.setAttribute('align', 'center');
-        desc.setAttribute('scale', '0.3 0.3 0.3');
-        block.appendChild(desc);
-        
-        timeline.appendChild(block);
-    });
-}
-
-// Initialize AR experience
-document.addEventListener('DOMContentLoaded', async () => {
-    const hasAR = await checkARSupport();
-    
-    if (hasAR) {
-        createTimeline();
-        
-        // Add marker detection events
-        const marker = document.getElementById('marker');
-        if (marker) {
-            marker.addEventListener('markerFound', () => {
-                updateStatus('marker-status', 'Marker detected!');
-            });
-            
-            marker.addEventListener('markerLost', () => {
-                updateStatus('marker-status', 'Looking for marker...');
-            });
-        }
-        
-        // Add click handlers for timeline blocks
-        document.querySelectorAll('[data-link]').forEach(el => {
-            el.addEventListener('click', e => {
-                window.location.href = e.target.dataset.link;
-            });
+    function updateStatus(elementId, message, isError = false) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = message;
+        element.style.color = isError ? '#FF6B6B' : element.style.color;
+      }
+    }
+  
+    /* -------------------------- Timeline ---------------------------- */
+    function createTimelineBlock(data, idx) {
+      const offset = idx * 1.2; // spacing along X
+  
+      // Box (could be replaced with <a-gltf-model> later)
+      const box = document.createElement('a-box');
+      box.setAttribute('position', `${offset} 0.35 0`);
+      box.setAttribute('depth', 0.3);
+      box.setAttribute('height', 0.7);
+      box.setAttribute('width', 1.1);
+      box.setAttribute('color', data.color);
+      box.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear');
+      box.setAttribute('cursor', 'rayOrigin: mouse');
+      box.dataset.link = data.link;
+  
+      // Text label (faces camera)
+      const label = document.createElement('a-text');
+      label.setAttribute('value', `${data.year}\n${data.title}`);
+      label.setAttribute('align', 'center');
+      label.setAttribute('color', '#FFFFFF');
+      label.setAttribute('position', `${offset} 1.15 0`);
+      label.setAttribute('scale', '0.45 0.45 0.45');
+      label.setAttribute('look-at', '[camera]');
+      label.setAttribute('cursor', 'rayOrigin: mouse');
+      label.dataset.link = data.link;
+  
+      // Click listener for both box & label
+      [box, label].forEach(el => {
+        el.classList.add('linkable');
+        el.addEventListener('click', e => {
+          const target = e.currentTarget.dataset.link;
+          if (target) {
+            updateStatus('marker-status', 'Navigating to puzzle...');
+            window.location.href = target;
+          }
         });
+      });
+  
+      timelineParent.appendChild(box);
+      timelineParent.appendChild(label);
     }
-    
-    // Add click handler for fallback message
-    document.getElementById('fallback').addEventListener('click', () => {
+  
+    function buildTimeline() {
+      timelineData.forEach(createTimelineBlock);
+    }
+  
+    /* --------------------- Marker‑specific Events ------------------- */
+    function initMarkerEvents() {
+      markerEl.addEventListener('markerFound', () => {
+        updateStatus('marker-status', 'Marker detected!');
+        console.log('Marker found ✔');
+      });
+      
+      markerEl.addEventListener('markerLost', () => {
+        updateStatus('marker-status', 'Looking for marker...');
+        console.log('Marker lost ✖');
+      });
+    }
+  
+    /* -------------------- UI & Navigation Hooks -------------------- */
+    function initUI() {
+      enterBtn.addEventListener('click', () => {
         window.location.href = '/';
+      });
+
+      // Add touch feedback
+      document.querySelectorAll('.linkable').forEach(el => {
+        el.addEventListener('touchstart', () => {
+          el.setAttribute('scale', '1.1 1.1 1.1');
+        });
+        el.addEventListener('touchend', () => {
+          el.setAttribute('scale', '1 1 1');
+        });
+      });
+    }
+  
+    /* ----------------- Optional Compass / Arrow -------------------- */
+    function addCompassArrow() {
+      const arrow = document.createElement('a-gltf-model');
+      arrow.setAttribute('src', '#arrowModel');
+      arrow.setAttribute('scale', '0.3 0.3 0.3');
+      arrow.setAttribute('position', '0 0.4 -1');
+      arrow.setAttribute('look-at', '[camera]');
+      arrow.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear');
+      document.querySelector('a-scene').appendChild(arrow);
+    }
+  
+    /* --------------------------- Boot ------------------------------ */
+    document.addEventListener('DOMContentLoaded', async () => {
+      updateStatus('browser-info', 'Initializing AR experience...');
+      initUI();
+  
+      if (!await checkDeviceSupport()) return; // stop if unsupported
+  
+      buildTimeline();
+      initMarkerEvents();
+  
+      // Uncomment once you have an arrow GLB referenced as #arrowModel
+      // addCompassArrow();
     });
-    
-    // Add click handler for Enter Site button
-    document.getElementById('enter-site').addEventListener('click', () => {
-        window.location.href = '/index.html';
-    });
-}); 
+})();
+  
