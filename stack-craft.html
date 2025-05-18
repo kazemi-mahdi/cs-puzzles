@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StackCraft - Learn Stack Operations</title>
+    <link rel="stylesheet" href="css/stack-craft.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>StackCraft</h1>
+            <div class="game-stats">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="timer">Time: <span id="timer">0:00</span></div>
+            </div>
+            <div class="controls">
+                <button id="tutorial-btn" class="btn">Tutorial</button>
+                <button id="reset-btn" class="btn">Reset</button>
+                <button id="submit-btn" class="btn">Check Solution</button>
+                <button id="next-level-btn" class="btn" disabled>Next Level</button>
+            </div>
+        </header>
+
+        <div id="level-info"></div>
+
+        <div class="game-area">
+            <div id="stacks-container"></div>
+            <div class="right-panel">
+                <div id="items-container"></div>
+                <div class="level-progress">
+                    <div class="progress-bar">
+                        <div class="progress" id="moves-progress"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>Moves: <span id="move-counter">0</span></span>
+                        <span>Max: <span id="max-moves">0</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="level-completion">
+                <h3>Level Progress</h3>
+                <div class="level-stars">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/stack-craft.js"></script>
+</body>
+</html> 
