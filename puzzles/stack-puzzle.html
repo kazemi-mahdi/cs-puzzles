@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Puzzle - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/stack-puzzle.css">
+</head>
+<body>
+    <header>
+        <h1>Stack Puzzle</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html#concepts">CS Concepts</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+                <li><a href="../index.html#games">Games</a></li>
+                <li><a href="../index.html#about">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="puzzle-container">
+                <div class="puzzle-info">
+                    <h2>Form the Word: <span id="target-word">BOOK</span></h2>
+                    <div class="stats">
+                        <p>Moves: <span id="move-counter">0</span></p>
+                        <p>Status: <span id="status-message">Start by pushing letters into the stack</span></p>
+                    </div>
+                </div>
+
+                <div class="game-area">
+                    <div class="tiles-container" id="tiles-container">
+                        <!-- Tiles will be added here dynamically -->
+                    </div>
+
+                    <div class="stack-container">
+                        <div class="stack" id="stack">
+                            <!-- Stack elements will be added here dynamically -->
+                        </div>
+                        <div class="stack-top-indicator">Top of Stack</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="reset-btn" class="btn">Reset</button>
+                    <button id="next-puzzle-btn" class="btn">Next Puzzle</button>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <h3>How to Play</h3>
+                <ul>
+                    <li>Drag letters from the tiles area into the stack</li>
+                    <li>Click on the top letter in the stack to pop it</li>
+                    <li>Form the target word by pushing and popping letters in the correct order</li>
+                    <li>Try to solve the puzzle in as few moves as possible!</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script src="../js/stack-puzzle.js"></script>
+</body>
+</html> 

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traveling Salesman Problem (TSP) - CS Puzzles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .visualization-links {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .visualization-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .visualization-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .visualization-card h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        .visualization-card a {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .visualization-card a:hover {
+            background-color: #2980b9;
+        }
+
+        .complexity-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .algorithm-section {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .algorithm-card {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .algorithm-card h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Traveling Salesman Problem (TSP)</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html#concepts">CS Concepts</a></li>
+                <li><a href="../index.html#puzzles">Puzzles</a></li>
+                <li><a href="../index.html#games">Games</a></li>
+                <li><a href="../index.html#about">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>What is the Traveling Salesman Problem?</h2>
+            <p>Think of it like this: You're a delivery driver who needs to visit several houses in a neighborhood. You want to:</p>
+            <ul>
+                <li>Visit each house exactly once</li>
+                <li>End up back where you started</li>
+                <li>Find the shortest possible route to do this</li>
+            </ul>
+
+            <p>Sounds simple, right? But here's the catch: as you add more stops, the number of possible routes explodes! Check this out:</p>
+            <ul>
+                <li>3 stops = 2 possible routes</li>
+                <li>4 stops = 6 possible routes</li>
+                <li>5 stops = 24 possible routes</li>
+                <li>10 stops = 362,880 possible routes!</li>
+            </ul>
+
+            <h2>Why Should You Care?</h2>
+            <p>This isn't just a theoretical puzzle - it's used in real life for:</p>
+            <ul>
+                <li>Planning delivery routes for companies like Amazon or UPS</li>
+                <li>Designing circuit boards for electronics</li>
+                <li>Planning network connections</li>
+                <li>Even in DNA research and telescope positioning!</li>
+            </ul>
+
+            <h2>Try it Yourself!</h2>
+            <div class="visualization-links">
+                <div class="visualization-card">
+                    <h3>TSP Visualizer</h3>
+                    <p>This cool tool lets you:</p>
+                    <ul>
+                        <li>Add your own cities</li>
+                        <li>Try different solving methods</li>
+                        <li>Watch how the computer finds solutions</li>
+                        <li>Compare different approaches</li>
+                    </ul>
+                    <a href="https://tspvis.com/" target="_blank">Give it a Try!</a>
+                </div>
+
+                <div class="visualization-card">
+                    <h3>Another Cool Visualizer</h3>
+                    <p>This one offers:</p>
+                    <ul>
+                        <li>Step-by-step solving</li>
+                        <li>Different solving strategies</li>
+                        <li>Easy-to-use interface</li>
+                    </ul>
+                    <a href="https://ellipsoul.github.io/Travelling-Salesman-Visualiser/" target="_blank">Try This One Too!</a>
+                </div>
+            </div>
+
+            <h2>The Challenge</h2>
+            <div class="complexity-box">
+                <p>Here's why this problem is so tricky:</p>
+                <ul>
+                    <li>There's no quick way to find the best route for lots of cities</li>
+                    <li>The time needed to solve it grows incredibly fast as you add more cities</li>
+                    <li>For real-world problems, we often settle for "good enough" solutions</li>
+                </ul>
+            </div>
+
+            <h2>How Do We Solve It?</h2>
+            <div class="algorithm-section">
+                <div class="algorithm-card">
+                    <h3>Perfect Solutions</h3>
+                    <p>These methods find the absolute best route, but they're slow:</p>
+                    <ul>
+                        <li>Branch and Bound (like trying every possible path)</li>
+                        <li>Dynamic Programming (breaking it into smaller problems)</li>
+                    </ul>
+                    <p>Great for small problems, but too slow for big ones!</p>
+                </div>
+
+                <div class="algorithm-card">
+                    <h3>Quick Solutions</h3>
+                    <p>These find good (but maybe not perfect) routes quickly:</p>
+                    <ul>
+                        <li>Nearest Neighbor (always go to the closest next city)</li>
+                        <li>2-Opt (swap parts of the route to make it shorter)</li>
+                        <li>Genetic Algorithms (evolve better solutions)</li>
+                        <li>Simulated Annealing (like metal cooling to find its best shape)</li>
+                    </ul>
+                    <p>Not perfect, but much faster for real-world problems!</p>
+                </div>
+            </div>
+
+            <h2>Ready to Try?</h2>
+            <p>Head over to one of the visualizers above to:</p>
+            <ul>
+                <li>Create your own map of cities</li>
+                <li>Watch how different methods solve it</li>
+                <li>See which approach works best</li>
+                <li>Get a feel for why this is such a fascinating problem!</li>
+            </ul>
+            <p>It's much easier to understand when you can see it in action!</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CS Puzzles & Games. All rights reserved.</p>
+    </footer>
+
+    <script src="../js/main.js"></script>
+</body>
+</html> 
