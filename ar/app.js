@@ -115,7 +115,7 @@
 
         // Create block
         const block = document.createElement('a-box');
-        block.setAttribute('position', `${x} 0 0`);
+        block.setAttribute('position', `${x} 0.5 0`); // Raised up slightly
         block.setAttribute('width', '1');
         block.setAttribute('height', '0.5');
         block.setAttribute('depth', '0.5');
@@ -161,9 +161,16 @@
         });
 
         container.appendChild(block);
+        console.log(`Created block for ${data.title} at position (${x}, 0.5, 0)`);
     }
 
     function buildTimeline() {
+        const container = document.getElementById('timeline-container');
+        if (!container) {
+            console.error('Timeline container not found!');
+            return;
+        }
+        console.log('Building timeline with', timelineEvents.length, 'events');
         timelineEvents.forEach((event, index) => {
             createTimelineBlock(event, index);
         });
@@ -172,15 +179,24 @@
     /* --------------------- Orientation Handling --------------------- */
     function initOrientationHandling() {
         const container = document.getElementById('timeline-container');
+        if (!container) {
+            console.error('Timeline container not found for orientation handling!');
+            return;
+        }
         let lastOrientation = null;
         let isPortrait = window.innerHeight > window.innerWidth;
 
         // Function to update orientation based on device orientation
         function updateOrientation(event) {
-            if (!event.beta || !event.gamma) return; // Skip if no orientation data
+            if (!event.beta || !event.gamma) {
+                console.log('No orientation data available');
+                return;
+            }
 
             const beta = event.beta;  // -180 to 180 (front/back tilt)
             const gamma = event.gamma; // -90 to 90 (left/right tilt)
+
+            console.log(`Device orientation - Beta: ${beta}, Gamma: ${gamma}`);
 
             // Determine if device is in portrait or landscape
             isPortrait = window.innerHeight > window.innerWidth;
@@ -202,6 +218,7 @@
 
             // Apply smooth rotation
             container.setAttribute('rotation', `${rotationX} ${rotationY} ${rotationZ}`);
+            console.log(`Applied rotation: ${rotationX}, ${rotationY}, ${rotationZ}`);
             lastOrientation = { beta, gamma };
         }
 
@@ -219,41 +236,44 @@
   
     /* --------------------- Marker‑specific Events ------------------- */
     function initMarkerEvents() {
-      let markerFoundCount = 0;
-      let markerLostCount = 0;
-      let lastMarkerUpdate = Date.now();
+        let markerFoundCount = 0;
+        let markerLostCount = 0;
+        let lastMarkerUpdate = Date.now();
 
-      // Update tracking info
-      function updateTrackingInfo() {
-        const scene = document.querySelector('a-scene');
-        if (scene && scene.systems['arjs']) {
-          const arSystem = scene.systems['arjs'];
-          trackingInfo.textContent = `Tracking: ${arSystem.arProfile.trackingBackend} (${arSystem.arProfile.detectionMode})`;
+        // Update tracking info
+        function updateTrackingInfo() {
+            const scene = document.querySelector('a-scene');
+            if (scene && scene.systems['arjs']) {
+                const arSystem = scene.systems['arjs'];
+                trackingInfo.textContent = `Tracking: ${arSystem.arProfile.trackingBackend} (${arSystem.arProfile.detectionMode})`;
+                console.log('AR.js tracking info updated:', arSystem.arProfile);
+            }
         }
-      }
 
-      // Initial tracking info update
-      updateTrackingInfo();
+        // Initial tracking info update
+        updateTrackingInfo();
 
-      markerEl.addEventListener('markerFound', () => {
-        markerFoundCount++;
-        const now = Date.now();
-        if (now - lastMarkerUpdate > 1000) {
-          updateStatus('marker-status', `Marker detected! (Found: ${markerFoundCount} times)`);
-          markerInfo.textContent = `Marker: Found (${markerFoundCount} times)`;
-          lastMarkerUpdate = now;
-        }
-      });
-      
-      markerEl.addEventListener('markerLost', () => {
-        markerLostCount++;
-        const now = Date.now();
-        if (now - lastMarkerUpdate > 1000) {
-          updateStatus('marker-status', `Looking for marker... (Lost: ${markerLostCount} times)`);
-          markerInfo.textContent = `Marker: Lost (${markerLostCount} times)`;
-          lastMarkerUpdate = now;
-        }
-      });
+        markerEl.addEventListener('markerFound', () => {
+            markerFoundCount++;
+            const now = Date.now();
+            if (now - lastMarkerUpdate > 1000) {
+                console.log('Marker found!', { count: markerFoundCount });
+                updateStatus('marker-status', `Marker detected! (Found: ${markerFoundCount} times)`);
+                markerInfo.textContent = `Marker: Found (${markerFoundCount} times)`;
+                lastMarkerUpdate = now;
+            }
+        });
+        
+        markerEl.addEventListener('markerLost', () => {
+            markerLostCount++;
+            const now = Date.now();
+            if (now - lastMarkerUpdate > 1000) {
+                console.log('Marker lost!', { count: markerLostCount });
+                updateStatus('marker-status', `Looking for marker... (Lost: ${markerLostCount} times)`);
+                markerInfo.textContent = `Marker: Lost (${markerLostCount} times)`;
+                lastMarkerUpdate = now;
+            }
+        });
     }
   
     /* -------------------- UI & Navigation Hooks -------------------- */
