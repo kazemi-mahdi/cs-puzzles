@@ -132,6 +132,7 @@
         title.setAttribute('align', 'center');
         title.setAttribute('color', '#FFFFFF');
         title.setAttribute('scale', '0.5 0.5 0.5');
+        title.setAttribute('look-at', '[camera]');
         block.appendChild(title);
         
         // Create year text
@@ -141,6 +142,7 @@
         year.setAttribute('align', 'center');
         year.setAttribute('color', '#FFFFFF');
         year.setAttribute('scale', '0.4 0.4 0.4');
+        year.setAttribute('look-at', '[camera]');
         block.appendChild(year);
         
         // Create description text
@@ -150,6 +152,7 @@
         desc.setAttribute('align', 'center');
         desc.setAttribute('color', '#FFFFFF');
         desc.setAttribute('scale', '0.3 0.3 0.3');
+        desc.setAttribute('look-at', '[camera]');
         block.appendChild(desc);
 
         // Add click handler
@@ -163,6 +166,54 @@
     function buildTimeline() {
         timelineEvents.forEach((event, index) => {
             createTimelineBlock(event, index);
+        });
+    }
+
+    /* --------------------- Orientation Handling --------------------- */
+    function initOrientationHandling() {
+        const container = document.getElementById('timeline-container');
+        let lastOrientation = null;
+        let isPortrait = window.innerHeight > window.innerWidth;
+
+        // Function to update orientation based on device orientation
+        function updateOrientation(event) {
+            if (!event.beta || !event.gamma) return; // Skip if no orientation data
+
+            const beta = event.beta;  // -180 to 180 (front/back tilt)
+            const gamma = event.gamma; // -90 to 90 (left/right tilt)
+
+            // Determine if device is in portrait or landscape
+            isPortrait = window.innerHeight > window.innerWidth;
+
+            // Calculate rotation based on device orientation
+            let rotationX = 0;
+            let rotationY = 0;
+            let rotationZ = 0;
+
+            if (isPortrait) {
+                // Portrait mode adjustments
+                rotationX = -beta; // Tilt forward/backward
+                rotationY = gamma; // Tilt left/right
+            } else {
+                // Landscape mode adjustments
+                rotationX = -gamma; // Tilt left/right
+                rotationY = beta;   // Tilt forward/backward
+            }
+
+            // Apply smooth rotation
+            container.setAttribute('rotation', `${rotationX} ${rotationY} ${rotationZ}`);
+            lastOrientation = { beta, gamma };
+        }
+
+        // Add device orientation event listener
+        window.addEventListener('deviceorientation', updateOrientation);
+
+        // Add window resize listener to handle orientation changes
+        window.addEventListener('resize', () => {
+            isPortrait = window.innerHeight > window.innerWidth;
+            if (lastOrientation) {
+                updateOrientation(lastOrientation);
+            }
         });
     }
   
@@ -221,6 +272,7 @@
   
       buildTimeline();
       initMarkerEvents();
+      initOrientationHandling(); // Initialize orientation handling
     });
 })();
   
