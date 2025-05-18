@@ -1,27 +1,54 @@
-// app.js – rewritten with modular timeline, click navigation, and robust fallback
+// app.js – Computer Science Timeline AR Experience
 (() => {
     'use strict';
   
     /* ---------------------------- Config ---------------------------- */
-    // Timeline data – replace / add events or colors as you like
-    const timelineData = [
-      { year: '1936', title: 'Turing Machine', color: '#FFC65D', link: '/puzzles/turing.html' },
-      { year: '1956', title: 'Dartmouth Workshop', color: '#7BC8A4', link: '/puzzles/dartmouth.html' },
-      { year: '1969', title: 'ARPANET', color: '#4CC3D9', link: '/puzzles/arpanet.html' },
-      { year: '1997', title: 'Deep Blue vs Kasparov', color: '#FF6B6B', link: '/puzzles/deepblue.html' },
-      { year: '2012', title: 'AlexNet Breakthrough', color: '#A27CE6', link: '/puzzles/alexnet.html' }
+    const timelineEvents = [
+        {
+            year: '1843',
+            title: 'Ada Lovelace',
+            description: 'First Computer Program',
+            color: '#FF6B6B',
+            link: '/puzzles/ada-lovelace.html'
+        },
+        {
+            year: '1936',
+            title: 'Alan Turing',
+            description: 'Turing Machine',
+            color: '#4ECDC4',
+            link: '/puzzles/alan-turing.html'
+        },
+        {
+            year: '1952',
+            title: 'Grace Hopper',
+            description: 'First Compiler',
+            color: '#45B7D1',
+            link: '/puzzles/grace-hopper.html'
+        },
+        {
+            year: '1989',
+            title: 'Tim Berners-Lee',
+            description: 'World Wide Web',
+            color: '#96CEB4',
+            link: '/puzzles/tim-berners-lee.html'
+        },
+        {
+            year: '2019',
+            title: 'Quantum Computing',
+            description: 'Quantum Supremacy',
+            color: '#FFEEAD',
+            link: '/puzzles/quantum-computing.html'
+        }
     ];
   
     /* ------------------------- Cached Elements ---------------------- */
-    const markerEl       = document.getElementById('marker');     // <a-marker>
-    const timelineParent = document.getElementById('timeline');   // <a-entity>
-    const enterBtn       = document.getElementById('enter-site'); // bottom button
-    const fallbackWrap   = document.getElementById('fallback');   // fallback overlay
-    const fallbackMsg    = document.getElementById('fallback-reason');
-    const statusContainer = document.getElementById('status-messages');
-    const trackingInfo   = document.getElementById('tracking-info');
-    const markerInfo     = document.getElementById('marker-info');
-    const cameraInfo     = document.getElementById('camera-info');
+    const markerEl = document.getElementById('marker');
+    const enterBtn = document.getElementById('enter-site');
+    const fallbackWrap = document.getElementById('fallback');
+    const fallbackMsg = document.getElementById('fallback-reason');
+    const trackingInfo = document.getElementById('tracking-info');
+    const markerInfo = document.getElementById('marker-info');
+    const cameraInfo = document.getElementById('camera-info');
   
     /* ------------------------ Support Check ------------------------- */
     async function checkDeviceSupport() {
@@ -78,51 +105,65 @@
         element.style.color = isError ? '#FF6B6B' : element.style.color;
       }
     }
-  
+
     /* -------------------------- Timeline ---------------------------- */
-    function createTimelineBlock(data, idx) {
-      const offset = idx * 1.2; // spacing along X
-  
-      // Box (could be replaced with <a-gltf-model> later)
-      const box = document.createElement('a-box');
-      box.setAttribute('position', `${offset} 0.35 0`);
-      box.setAttribute('depth', 0.3);
-      box.setAttribute('height', 0.7);
-      box.setAttribute('width', 1.1);
-      box.setAttribute('color', data.color);
-      box.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear');
-      box.setAttribute('cursor', 'rayOrigin: mouse');
-      box.dataset.link = data.link;
-  
-      // Text label (faces camera)
-      const label = document.createElement('a-text');
-      label.setAttribute('value', `${data.year}\n${data.title}`);
-      label.setAttribute('align', 'center');
-      label.setAttribute('color', '#FFFFFF');
-      label.setAttribute('position', `${offset} 1.15 0`);
-      label.setAttribute('scale', '0.45 0.45 0.45');
-      label.setAttribute('look-at', '[camera]');
-      label.setAttribute('cursor', 'rayOrigin: mouse');
-      label.dataset.link = data.link;
-  
-      // Click listener for both box & label
-      [box, label].forEach(el => {
-        el.classList.add('linkable');
-        el.addEventListener('click', e => {
-          const target = e.currentTarget.dataset.link;
-          if (target) {
-            updateStatus('marker-status', 'Navigating to puzzle...');
-            window.location.href = target;
-          }
+    function createTimelineBlock(data, index) {
+        const container = document.getElementById('timeline-container');
+        const spacing = 1.5; // Space between blocks
+        const startX = -(timelineEvents.length - 1) * spacing / 2;
+        const x = startX + index * spacing;
+
+        // Create block
+        const block = document.createElement('a-box');
+        block.setAttribute('position', `${x} 0 0`);
+        block.setAttribute('width', '1');
+        block.setAttribute('height', '0.5');
+        block.setAttribute('depth', '0.5');
+        block.setAttribute('color', data.color);
+        block.setAttribute('data-link', data.link);
+        block.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 30000');
+        block.setAttribute('cursor', 'rayOrigin: mouse');
+        block.classList.add('linkable');
+        
+        // Create title text
+        const title = document.createElement('a-text');
+        title.setAttribute('value', data.title);
+        title.setAttribute('position', '0 0.4 0.26');
+        title.setAttribute('align', 'center');
+        title.setAttribute('color', '#FFFFFF');
+        title.setAttribute('scale', '0.5 0.5 0.5');
+        block.appendChild(title);
+        
+        // Create year text
+        const year = document.createElement('a-text');
+        year.setAttribute('value', data.year);
+        year.setAttribute('position', '0 0.2 0.26');
+        year.setAttribute('align', 'center');
+        year.setAttribute('color', '#FFFFFF');
+        year.setAttribute('scale', '0.4 0.4 0.4');
+        block.appendChild(year);
+        
+        // Create description text
+        const desc = document.createElement('a-text');
+        desc.setAttribute('value', data.description);
+        desc.setAttribute('position', '0 0 0.26');
+        desc.setAttribute('align', 'center');
+        desc.setAttribute('color', '#FFFFFF');
+        desc.setAttribute('scale', '0.3 0.3 0.3');
+        block.appendChild(desc);
+
+        // Add click handler
+        block.addEventListener('click', () => {
+            window.location.href = data.link;
         });
-      });
-  
-      timelineParent.appendChild(box);
-      timelineParent.appendChild(label);
+
+        container.appendChild(block);
     }
-  
+
     function buildTimeline() {
-      timelineData.forEach(createTimelineBlock);
+        timelineEvents.forEach((event, index) => {
+            createTimelineBlock(event, index);
+        });
     }
   
     /* --------------------- Marker‑specific Events ------------------- */
@@ -151,11 +192,6 @@
           markerInfo.textContent = `Marker: Found (${markerFoundCount} times)`;
           lastMarkerUpdate = now;
         }
-        console.log('Marker found ✔', {
-          timestamp: new Date().toISOString(),
-          foundCount: markerFoundCount,
-          trackingBackend: document.querySelector('a-scene').systems['arjs'].arProfile.trackingBackend
-        });
       });
       
       markerEl.addEventListener('markerLost', () => {
@@ -166,11 +202,6 @@
           markerInfo.textContent = `Marker: Lost (${markerLostCount} times)`;
           lastMarkerUpdate = now;
         }
-        console.log('Marker lost ✖', {
-          timestamp: new Date().toISOString(),
-          lostCount: markerLostCount,
-          trackingBackend: document.querySelector('a-scene').systems['arjs'].arProfile.trackingBackend
-        });
       });
     }
   
@@ -179,27 +210,6 @@
       enterBtn.addEventListener('click', () => {
         window.location.href = '/';
       });
-
-      // Add touch feedback
-      document.querySelectorAll('.linkable').forEach(el => {
-        el.addEventListener('touchstart', () => {
-          el.setAttribute('scale', '1.1 1.1 1.1');
-        });
-        el.addEventListener('touchend', () => {
-          el.setAttribute('scale', '1 1 1');
-        });
-      });
-    }
-  
-    /* ----------------- Optional Compass / Arrow -------------------- */
-    function addCompassArrow() {
-      const arrow = document.createElement('a-gltf-model');
-      arrow.setAttribute('src', '#arrowModel');
-      arrow.setAttribute('scale', '0.3 0.3 0.3');
-      arrow.setAttribute('position', '0 0.4 -1');
-      arrow.setAttribute('look-at', '[camera]');
-      arrow.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear');
-      document.querySelector('a-scene').appendChild(arrow);
     }
   
     /* --------------------------- Boot ------------------------------ */
@@ -211,9 +221,6 @@
   
       buildTimeline();
       initMarkerEvents();
-  
-      // Uncomment once you have an arrow GLB referenced as #arrowModel
-      // addCompassArrow();
     });
 })();
   

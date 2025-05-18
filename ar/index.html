@@ -38,25 +38,33 @@
                    markersAreaEnabled: true;
                    markerSize: 0.15;">
         
-        <!-- Simple Test Marker -->
+        <!-- Timeline Marker -->
         <a-marker preset="hiro"
                   emitevents="true"
                   id="marker">
-            <!-- Large, bright test object -->
-            <a-box position="0 0.5 0" 
-                   rotation="0 45 0" 
-                   color="#FF0000"
-                   scale="0.5 0.5 0.5"
-                   animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
-            </a-box>
+            <!-- Timeline Container -->
+            <a-entity id="timeline-container" 
+                     position="0 0 0" 
+                     rotation="-90 0 0">
+                <!-- Timeline blocks will be added dynamically via JavaScript -->
+            </a-entity>
 
-            <!-- Text indicator -->
-            <a-text value="MARKER DETECTED!" 
-                    position="0 1 0" 
+            <!-- Title -->
+            <a-text value="Computer Science Timeline" 
+                    position="0 1.5 0" 
                     look-at="[camera]" 
                     align="center" 
-                    color="#00FF00"
+                    color="#FFFFFF"
                     scale="1 1 1">
+            </a-text>
+
+            <!-- Instructions -->
+            <a-text value="Point at blocks to learn more" 
+                    position="0 1.2 0" 
+                    look-at="[camera]" 
+                    align="center" 
+                    color="#AAAAAA"
+                    scale="0.5 0.5 0.5">
             </a-text>
         </a-marker>
 
