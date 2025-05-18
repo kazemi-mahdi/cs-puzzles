@@ -66,9 +66,8 @@ async function checkARSupport() {
         updateStatus('browser-info', 'iOS Safari detected - AR should work!');
     }
     
-    // Check for WebXR
-    const hasWebXR = 'xr' in navigator;
-    if (!hasWebXR) {
+    // Check for WebXR with more detailed feature detection
+    if (!navigator.xr) {
         const message = 'WebXR not supported in this browser';
         updateStatus('browser-info', message, true);
         document.getElementById('fallback-reason').textContent = message;
@@ -76,8 +75,24 @@ async function checkARSupport() {
         document.getElementById('fallback').classList.remove('hidden');
         return false;
     }
+
+    // Check for AR features
+    try {
+        const isSupported = await navigator.xr.isSessionSupported('immersive-ar');
+        if (!isSupported) {
+            const message = 'AR features not supported in this browser';
+            updateStatus('browser-info', message, true);
+            document.getElementById('fallback-reason').textContent = message;
+            document.body.classList.add('fallback');
+            document.getElementById('fallback').classList.remove('hidden');
+            return false;
+        }
+    } catch (err) {
+        console.warn('Error checking AR support:', err);
+        // Continue anyway as some browsers might support AR.js without WebXR
+    }
     
-    // Check for getUserMedia
+    // Check for getUserMedia with more specific requirements
     const hasMediaDevices = 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices;
     if (!hasMediaDevices) {
         const message = 'Camera access not supported in this browser';
@@ -90,13 +105,17 @@ async function checkARSupport() {
     
     try {
         updateStatus('camera-status', 'Requesting camera access...');
-        await navigator.mediaDevices.getUserMedia({ 
+        const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
                 facingMode: 'environment',
                 width: { ideal: 1280 },
                 height: { ideal: 960 }
             } 
         });
+        
+        // Stop the stream immediately as we just needed to check access
+        stream.getTracks().forEach(track => track.stop());
+        
         updateStatus('camera-status', 'Camera access granted!');
         return true;
     } catch (err) {
