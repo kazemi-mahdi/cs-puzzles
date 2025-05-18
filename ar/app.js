@@ -19,6 +19,9 @@
     const fallbackWrap   = document.getElementById('fallback');   // fallback overlay
     const fallbackMsg    = document.getElementById('fallback-reason');
     const statusContainer = document.getElementById('status-messages');
+    const trackingInfo   = document.getElementById('tracking-info');
+    const markerInfo     = document.getElementById('marker-info');
+    const cameraInfo     = document.getElementById('camera-info');
   
     /* ------------------------ Support Check ------------------------- */
     async function checkDeviceSupport() {
@@ -29,11 +32,6 @@
       if (isIOS && !isSafari) {
         showFallback('Please use Safari on iOS for the best AR experience');
         return false;
-      }
-
-      // Check for WebXR support
-      if (!navigator.xr) {
-        console.warn('WebXR not supported, falling back to AR.js');
       }
 
       // Check camera support
@@ -47,11 +45,17 @@
         const testStream = await navigator.mediaDevices.getUserMedia({ 
           video: { 
             facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 960 }
+            width: { ideal: 640 },
+            height: { ideal: 480 }
           } 
         });
-        testStream.getTracks().forEach(t => t.stop()); // close test stream
+        
+        // Get camera capabilities
+        const videoTrack = testStream.getVideoTracks()[0];
+        const capabilities = videoTrack.getCapabilities();
+        cameraInfo.textContent = `Camera: ${capabilities.width.max}x${capabilities.height.max}`;
+        
+        testStream.getTracks().forEach(t => t.stop());
         updateStatus('camera-status', 'Camera access granted!');
         return true;
       } catch (err) {
@@ -126,8 +130,6 @@
       let markerFoundCount = 0;
       let markerLostCount = 0;
       let lastMarkerUpdate = Date.now();
-      const trackingInfo = document.getElementById('tracking-info');
-      const markerInfo = document.getElementById('marker-info');
 
       // Update tracking info
       function updateTrackingInfo() {
@@ -170,35 +172,6 @@
           trackingBackend: document.querySelector('a-scene').systems['arjs'].arProfile.trackingBackend
         });
       });
-
-      // Add marker debug info
-      const debugInfo = document.createElement('div');
-      debugInfo.id = 'marker-debug';
-      debugInfo.style.position = 'fixed';
-      debugInfo.style.bottom = '60px';
-      debugInfo.style.left = '10px';
-      debugInfo.style.background = 'rgba(0,0,0,0.7)';
-      debugInfo.style.color = 'white';
-      debugInfo.style.padding = '10px';
-      debugInfo.style.borderRadius = '5px';
-      debugInfo.style.fontSize = '12px';
-      debugInfo.style.zIndex = '1000';
-      document.body.appendChild(debugInfo);
-
-      // Update debug info every second
-      setInterval(() => {
-        const scene = document.querySelector('a-scene');
-        const arSystem = scene ? scene.systems['arjs'] : null;
-        debugInfo.innerHTML = `
-          Marker Stats:<br>
-          Found: ${markerFoundCount}<br>
-          Lost: ${markerLostCount}<br>
-          Success Rate: ${markerFoundCount + markerLostCount > 0 ? 
-            Math.round((markerFoundCount / (markerFoundCount + markerLostCount)) * 100) : 0}%<br>
-          Tracking: ${arSystem ? arSystem.arProfile.trackingBackend : 'Unknown'}<br>
-          Mode: ${arSystem ? arSystem.arProfile.detectionMode : 'Unknown'}
-        `;
-      }, 1000);
     }
   
     /* -------------------- UI & Navigation Hooks -------------------- */
@@ -234,7 +207,7 @@
       updateStatus('browser-info', 'Initializing AR experience...');
       initUI();
   
-      if (!await checkDeviceSupport()) return; // stop if unsupported
+      if (!await checkDeviceSupport()) return;
   
       buildTimeline();
       initMarkerEvents();

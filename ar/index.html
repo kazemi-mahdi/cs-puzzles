@@ -24,53 +24,53 @@
              arjs="sourceType: webcam; 
                    debugUIEnabled: true;
                    detectionMode: mono;
-                   sourceWidth: 1280;
-                   sourceHeight: 960;
-                   displayWidth: 1280;
-                   displayHeight: 960;
-                   maxDetectionRate: 60;
-                   canvasWidth: 1280;
-                   canvasHeight: 960;
+                   sourceWidth: 640;
+                   sourceHeight: 480;
+                   displayWidth: 640;
+                   displayHeight: 480;
+                   debugMode: true;
+                   maxDetectionRate: 30;
+                   canvasWidth: 640;
+                   canvasHeight: 480;
                    areaLearningButton: false;
                    trackingMethod: best;
                    patternRatio: 0.5;
                    markersAreaEnabled: true;
-                   markerSize: 0.15;
-                   trackingBackend: artoolkit;
-                   debugMode: true;">
-        <!-- Marker -->
+                   markerSize: 0.15;">
+        
+        <!-- Simple Test Marker -->
         <a-marker preset="hiro"
                   emitevents="true"
-                  smooth="true"
-                  smoothCount="5"
-                  smoothTolerance="0.01"
-                  smoothThreshold="2"
-                  raycaster="objects: .linkable"
                   id="marker">
-            <!-- Test Cube -->
+            <!-- Large, bright test object -->
             <a-box position="0 0.5 0" 
                    rotation="0 45 0" 
-                   color="#4CC3D9"
+                   color="#FF0000"
+                   scale="0.5 0.5 0.5"
                    animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
             </a-box>
 
-            <!-- Timeline parent entity -->
-            <a-entity id="timeline" position="0 0 0" rotation="-90 0 0">
-                <!-- Timeline blocks will be added dynamically via JavaScript -->
-            </a-entity>
-
-            <!-- Billboard booth label -->
-            <a-text value="📍 Booth: Room A14" 
-                    position="0 0.25 0" 
+            <!-- Text indicator -->
+            <a-text value="MARKER DETECTED!" 
+                    position="0 1 0" 
                     look-at="[camera]" 
                     align="center" 
-                    scale="0.5 0.5 0.5">
+                    color="#00FF00"
+                    scale="1 1 1">
             </a-text>
         </a-marker>
 
         <!-- Camera -->
         <a-entity camera></a-entity>
     </a-scene>
+
+    <!-- Debug Overlay -->
+    <div id="debug-overlay" style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 1000;">
+        <p>AR.js Debug Info:</p>
+        <p id="tracking-info">Tracking: Initializing...</p>
+        <p id="marker-info">Marker: Waiting...</p>
+        <p id="camera-info">Camera: Checking...</p>
+    </div>
 
     <!-- Fallback message (hidden by default) -->
     <div id="fallback" class="hidden">
@@ -80,12 +80,5 @@
 
     <!-- Enter Site button -->
     <button id="enter-site">Enter Site</button>
-
-    <!-- Debug Info -->
-    <div id="debug-info" style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 1000;">
-        <p>AR.js Debug Info:</p>
-        <p id="tracking-info">Tracking: Initializing...</p>
-        <p id="marker-info">Marker: Waiting...</p>
-    </div>
 </body>
 </html> 
