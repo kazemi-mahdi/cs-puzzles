@@ -30,16 +30,22 @@
                    displayHeight: 960;
                    maxDetectionRate: 60;
                    canvasWidth: 1280;
-                   canvasHeight: 960;">
+                   canvasHeight: 960;
+                   areaLearningButton: false;
+                   trackingMethod: best;
+                   patternRatio: 0.5;
+                   markersAreaEnabled: true;
+                   markerSize: 0.15;
+                   trackingBackend: artoolkit;
+                   debugMode: true;">
         <!-- Marker -->
-        <a-marker type="pattern" 
-                  preset="hiro"
-                  url="markers/cs-marker.patt"
+        <a-marker preset="hiro"
                   emitevents="true"
                   smooth="true"
                   smoothCount="5"
                   smoothTolerance="0.01"
                   smoothThreshold="2"
+                  raycaster="objects: .linkable"
                   id="marker">
             <!-- Test Cube -->
             <a-box position="0 0.5 0" 
@@ -74,5 +80,12 @@
 
     <!-- Enter Site button -->
     <button id="enter-site">Enter Site</button>
+
+    <!-- Debug Info -->
+    <div id="debug-info" style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 10px; border-radius: 5px; font-size: 12px; z-index: 1000;">
+        <p>AR.js Debug Info:</p>
+        <p id="tracking-info">Tracking: Initializing...</p>
+        <p id="marker-info">Marker: Waiting...</p>
+    </div>
 </body>
 </html> 

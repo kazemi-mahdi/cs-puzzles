@@ -126,17 +126,33 @@
       let markerFoundCount = 0;
       let markerLostCount = 0;
       let lastMarkerUpdate = Date.now();
+      const trackingInfo = document.getElementById('tracking-info');
+      const markerInfo = document.getElementById('marker-info');
+
+      // Update tracking info
+      function updateTrackingInfo() {
+        const scene = document.querySelector('a-scene');
+        if (scene && scene.systems['arjs']) {
+          const arSystem = scene.systems['arjs'];
+          trackingInfo.textContent = `Tracking: ${arSystem.arProfile.trackingBackend} (${arSystem.arProfile.detectionMode})`;
+        }
+      }
+
+      // Initial tracking info update
+      updateTrackingInfo();
 
       markerEl.addEventListener('markerFound', () => {
         markerFoundCount++;
         const now = Date.now();
-        if (now - lastMarkerUpdate > 1000) { // Update status at most once per second
+        if (now - lastMarkerUpdate > 1000) {
           updateStatus('marker-status', `Marker detected! (Found: ${markerFoundCount} times)`);
+          markerInfo.textContent = `Marker: Found (${markerFoundCount} times)`;
           lastMarkerUpdate = now;
         }
         console.log('Marker found ✔', {
           timestamp: new Date().toISOString(),
-          foundCount: markerFoundCount
+          foundCount: markerFoundCount,
+          trackingBackend: document.querySelector('a-scene').systems['arjs'].arProfile.trackingBackend
         });
       });
       
@@ -145,11 +161,13 @@
         const now = Date.now();
         if (now - lastMarkerUpdate > 1000) {
           updateStatus('marker-status', `Looking for marker... (Lost: ${markerLostCount} times)`);
+          markerInfo.textContent = `Marker: Lost (${markerLostCount} times)`;
           lastMarkerUpdate = now;
         }
         console.log('Marker lost ✖', {
           timestamp: new Date().toISOString(),
-          lostCount: markerLostCount
+          lostCount: markerLostCount,
+          trackingBackend: document.querySelector('a-scene').systems['arjs'].arProfile.trackingBackend
         });
       });
 
@@ -169,12 +187,16 @@
 
       // Update debug info every second
       setInterval(() => {
+        const scene = document.querySelector('a-scene');
+        const arSystem = scene ? scene.systems['arjs'] : null;
         debugInfo.innerHTML = `
           Marker Stats:<br>
           Found: ${markerFoundCount}<br>
           Lost: ${markerLostCount}<br>
           Success Rate: ${markerFoundCount + markerLostCount > 0 ? 
-            Math.round((markerFoundCount / (markerFoundCount + markerLostCount)) * 100) : 0}%
+            Math.round((markerFoundCount / (markerFoundCount + markerLostCount)) * 100) : 0}%<br>
+          Tracking: ${arSystem ? arSystem.arProfile.trackingBackend : 'Unknown'}<br>
+          Mode: ${arSystem ? arSystem.arProfile.detectionMode : 'Unknown'}
         `;
       }, 1000);
     }
