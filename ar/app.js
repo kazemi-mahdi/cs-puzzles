@@ -123,15 +123,60 @@
   
     /* --------------------- Marker‑specific Events ------------------- */
     function initMarkerEvents() {
+      let markerFoundCount = 0;
+      let markerLostCount = 0;
+      let lastMarkerUpdate = Date.now();
+
       markerEl.addEventListener('markerFound', () => {
-        updateStatus('marker-status', 'Marker detected!');
-        console.log('Marker found ✔');
+        markerFoundCount++;
+        const now = Date.now();
+        if (now - lastMarkerUpdate > 1000) { // Update status at most once per second
+          updateStatus('marker-status', `Marker detected! (Found: ${markerFoundCount} times)`);
+          lastMarkerUpdate = now;
+        }
+        console.log('Marker found ✔', {
+          timestamp: new Date().toISOString(),
+          foundCount: markerFoundCount
+        });
       });
       
       markerEl.addEventListener('markerLost', () => {
-        updateStatus('marker-status', 'Looking for marker...');
-        console.log('Marker lost ✖');
+        markerLostCount++;
+        const now = Date.now();
+        if (now - lastMarkerUpdate > 1000) {
+          updateStatus('marker-status', `Looking for marker... (Lost: ${markerLostCount} times)`);
+          lastMarkerUpdate = now;
+        }
+        console.log('Marker lost ✖', {
+          timestamp: new Date().toISOString(),
+          lostCount: markerLostCount
+        });
       });
+
+      // Add marker debug info
+      const debugInfo = document.createElement('div');
+      debugInfo.id = 'marker-debug';
+      debugInfo.style.position = 'fixed';
+      debugInfo.style.bottom = '60px';
+      debugInfo.style.left = '10px';
+      debugInfo.style.background = 'rgba(0,0,0,0.7)';
+      debugInfo.style.color = 'white';
+      debugInfo.style.padding = '10px';
+      debugInfo.style.borderRadius = '5px';
+      debugInfo.style.fontSize = '12px';
+      debugInfo.style.zIndex = '1000';
+      document.body.appendChild(debugInfo);
+
+      // Update debug info every second
+      setInterval(() => {
+        debugInfo.innerHTML = `
+          Marker Stats:<br>
+          Found: ${markerFoundCount}<br>
+          Lost: ${markerLostCount}<br>
+          Success Rate: ${markerFoundCount + markerLostCount > 0 ? 
+            Math.round((markerFoundCount / (markerFoundCount + markerLostCount)) * 100) : 0}%
+        `;
+      }, 1000);
     }
   
     /* -------------------- UI & Navigation Hooks -------------------- */

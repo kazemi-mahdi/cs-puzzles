@@ -22,17 +22,24 @@
              vr-mode-ui="enabled: false" 
              renderer="logarithmicDepthBuffer: true; precision: medium"
              arjs="sourceType: webcam; 
-                   debugUIEnabled: false;
-                   detectionMode: mono_and_matrix;
-                   matrixCodeType: 3x3;
+                   debugUIEnabled: true;
+                   detectionMode: mono;
                    sourceWidth: 1280;
                    sourceHeight: 960;
                    displayWidth: 1280;
-                   displayHeight: 960;">
+                   displayHeight: 960;
+                   maxDetectionRate: 60;
+                   canvasWidth: 1280;
+                   canvasHeight: 960;">
         <!-- Marker -->
         <a-marker type="pattern" 
+                  preset="hiro"
                   url="markers/cs-marker.patt"
                   emitevents="true"
+                  smooth="true"
+                  smoothCount="5"
+                  smoothTolerance="0.01"
+                  smoothThreshold="2"
                   id="marker">
             <!-- Test Cube -->
             <a-box position="0 0.5 0" 
