@@ -107,15 +107,16 @@
     }
 
     /* -------------------------- Timeline ---------------------------- */
-    function createTimelineBlock(data, index) {
+    function createTimelineBlock(data, position) {
         const container = document.getElementById('timeline-container');
-        const spacing = 1.5; // Space between blocks
-        const startX = -(timelineEvents.length - 1) * spacing / 2;
-        const x = startX + index * spacing;
+        if (!container) {
+            console.error('Timeline container not found!');
+            return;
+        }
 
         // Create block
         const block = document.createElement('a-box');
-        block.setAttribute('position', `${x} 0.5 0`); // Raised up slightly
+        block.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
         block.setAttribute('width', '1');
         block.setAttribute('height', '0.5');
         block.setAttribute('depth', '0.5');
@@ -161,19 +162,7 @@
         });
 
         container.appendChild(block);
-        console.log(`Created block for ${data.title} at position (${x}, 0.5, 0)`);
-    }
-
-    function buildTimeline() {
-        const container = document.getElementById('timeline-container');
-        if (!container) {
-            console.error('Timeline container not found!');
-            return;
-        }
-        console.log('Building timeline with', timelineEvents.length, 'events');
-        timelineEvents.forEach((event, index) => {
-            createTimelineBlock(event, index);
-        });
+        console.log(`Created block for ${data.title} at position (${position.x}, ${position.y}, ${position.z})`);
     }
 
     /* --------------------- Orientation Handling --------------------- */
@@ -312,16 +301,83 @@
       });
     }
   
+    /* -------------------- Performance Tweaks -------------------- */
+    function applyMobileOptimizations() {
+        const scene = document.querySelector('a-scene');
+        if (!scene) return;
+        
+        // Reduce render quality for mobile
+        if (/Mobi|Android/i.test(navigator.userAgent)) {
+            scene.setAttribute('renderer', 'antialias: false; precision: low');
+        }
+    }
+
+    /* -------------------- Test Scene -------------------- */
+    function loadTestModel() {
+        const model = document.createElement('a-entity');
+        model.setAttribute('gltf-model', 'models/toothbrush.glb');
+        model.setAttribute('scale', '0.5 0.5 0.5');
+        model.setAttribute('position', '0 0 0');
+        model.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 30000');
+        document.querySelector('a-scene').appendChild(model);
+    }
+
+    async function initTestScene() {
+        if (!await checkDeviceSupport()) return;
+        loadTestModel();
+        updateStatus('browser-info', 'Test model loaded - Scan Hiro marker');
+    }
+
+    /* ---------------------------- Config ---------------------------- */
+    const timelineConfig = {
+        spacing: 1.5,
+        baseHeight: 0.5,
+        blockSize: { width: 1, height: 0.5, depth: 0.5 }
+    };
+
+    /* ---------------------- Timeline Management -------------------- */
+    function clearTimeline() {
+        const container = document.getElementById('timeline-container');
+        if (!container) return;
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+    }
+
+    function calculateLayoutPositions(itemCount) {
+        return Array.from({ length: itemCount }, (_, i) => {
+            return -((itemCount - 1) * timelineConfig.spacing) / 2 + i * timelineConfig.spacing;
+        });
+    }
+
+    function updateTimeline() {
+        clearTimeline();
+        const positions = calculateLayoutPositions(timelineEvents.length);
+        
+        timelineEvents.forEach((event, index) => {
+            createTimelineBlock(event, {
+                x: positions[index],
+                y: timelineConfig.baseHeight,
+                z: 0
+            });
+        });
+    }
+
     /* --------------------------- Boot ------------------------------ */
     document.addEventListener('DOMContentLoaded', async () => {
-      updateStatus('browser-info', 'Initializing AR experience...');
-      initUI();
-  
-      if (!await checkDeviceSupport()) return;
-  
-      buildTimeline();
-      initMarkerEvents();
-      initOrientationHandling(); // Initialize orientation handling
+        updateStatus('browser-info', 'Initializing AR experience...');
+        initUI();
+        applyMobileOptimizations();
+
+        if (!await checkDeviceSupport()) return;
+
+        // Initialize test scene first
+        initTestScene();
+        
+        // Then initialize the full timeline
+        updateTimeline();
+        initMarkerEvents();
+        initOrientationHandling();
     });
 })();
   

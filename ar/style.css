@@ -114,4 +114,19 @@ body.fallback a-scene {
     #enter-site {
         padding-bottom: calc(12px + env(safe-area-inset-bottom));
     }
+}
+
+/* Touch interaction optimizations */
+a-box {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile performance tweaks */
+@media (max-width: 768px) {
+    a-scene {
+        transform: translate3d(0,0,0);
+        backface-visibility: hidden;
+        perspective: 1000;
+    }
 } 

@@ -38,6 +38,9 @@
                    markersAreaEnabled: true;
                    markerSize: 0.15;">
         
+        <!-- Test Model Entity -->
+        <a-entity id="test-model" visible="false"></a-entity>
+
         <!-- Timeline Marker -->
         <a-marker preset="hiro"
                   emitevents="true"
@@ -78,6 +81,11 @@
         <p id="tracking-info">Tracking: Initializing...</p>
         <p id="marker-info">Marker: Waiting...</p>
         <p id="camera-info">Camera: Checking...</p>
+    </div>
+
+    <!-- Debug Controls -->
+    <div id="debug-controls" class="hidden">
+        <button onclick="toggleEvent(2019)">Toggle Quantum</button>
     </div>
 
     <!-- Fallback message (hidden by default) -->
