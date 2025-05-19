@@ -93,10 +93,23 @@
             // Create text
             const text = document.createElement('a-text');
             text.setAttribute('value', `${event.year}\n${event.title}\n${event.description}`);
-            text.setAttribute('position', `${position.x} ${position.y + CONFIG.textOffset} 0`);
-            text.setAttribute('scale', '0.5 0.5 0.5');
-            text.setAttribute('class', 'timeline-text');
+            text.setAttribute('position', {
+                x: position.x,
+                y: position.y + CONFIG.textOffset,
+                z: -0.3
+            });
+            text.setAttribute('rotation', {
+                x: -90,
+                y: 0,
+                z: 0
+            });
+            text.setAttribute('align', 'center');
+            text.setAttribute('color', '#FFF');
+            text.setAttribute('scale', '0.8 0.8 0.8');
             text.setAttribute('look-at', '[camera]');
+            text.setAttribute('geometry', 'primitive: plane; width: 1.5');
+            text.setAttribute('material', 'color: #000; opacity: 0.7');
+            text.setAttribute('class', 'timeline-text');
             container.appendChild(text);
         });
     }

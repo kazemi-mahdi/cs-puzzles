@@ -47,6 +47,9 @@ a-marker > a-entity {
     white-space: pre;
     text-align: center;
     mix-blend-mode: difference;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-weight: bold;
 }
 
 /* Mobile Optimizations */
