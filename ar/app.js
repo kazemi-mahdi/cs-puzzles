@@ -242,17 +242,34 @@
             return;
         }
 
+        // Remove any existing model
+        const existingModel = marker.querySelector('[gltf-model]');
+        if (existingModel) {
+            existingModel.remove();
+        }
+
         // Create the GLB model entity
         const model = document.createElement('a-entity');
         model.setAttribute('gltf-model', modelPath);
-        model.setAttribute('scale', '0.5 0.5 0.5'); // Adjust scale as needed
-        model.setAttribute('position', '0 0.5 0'); // Position slightly above the marker
+        model.setAttribute('scale', '0.5 0.5 0.5');
+        model.setAttribute('position', '0 0.5 0');
         model.setAttribute('rotation', '0 0 0');
-        model.setAttribute('animation-mixer', ''); // Enable animations if present
+        model.setAttribute('animation-mixer', '');
+
+        // Add loading event listeners
+        model.addEventListener('model-loaded', () => {
+            console.log('Model loaded successfully:', modelPath);
+            updateStatus('marker-status', 'Model loaded successfully!');
+        });
+
+        model.addEventListener('model-error', (error) => {
+            console.error('Error loading model:', error);
+            updateStatus('marker-status', 'Error loading model!', true);
+        });
 
         // Add the model to the marker
         marker.appendChild(model);
-        console.log(`Loaded GLB model from ${modelPath}`);
+        console.log(`Attempting to load GLB model from ${modelPath}`);
     }
   
     /* ------------------------- Marker Events ------------------------- */
