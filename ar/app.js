@@ -27,14 +27,24 @@
         }
     ];
   
+    const timelineConfig = {
+        spacing: 2.2,
+        blockSize: 0.8,
+        textOffset: 1.2,
+        baseHeight: 0.5,  // Increased for better visibility
+        line: {
+            color: '#FFFFFF',
+            height: 0.1,
+            depth: 0.1
+        }
+    };
+  
     /* ------------------------- Cached Elements ---------------------- */
     const markerEl = document.getElementById('marker');
     const enterBtn = document.getElementById('enter-site');
     const fallbackWrap = document.getElementById('fallback');
     const fallbackMsg = document.getElementById('fallback-reason');
-    const trackingInfo = document.getElementById('tracking-info');
-    const markerInfo = document.getElementById('marker-info');
-    const cameraInfo = document.getElementById('camera-info');
+    const scene = document.querySelector('a-scene');
   
     /* ------------------------ Support Check ------------------------- */
     async function checkDeviceSupport() {
@@ -78,37 +88,46 @@
     }
 
     /* -------------------------- Timeline ---------------------------- */
-    function createTimeline() {
+    function rebuildTimeline() {
+        console.log('Rebuilding timeline...');
         const container = document.getElementById('timeline-container');
-        if (!container) return;
+        if (!container) {
+            console.error('Timeline container not found!');
+            return;
+        }
 
+        // Clear existing content
         container.innerHTML = '';
         
+        // Create timeline elements
         timelineEvents.forEach((event, index) => {
             const position = calculatePosition(index);
+            console.log(`Creating element at position:`, position);
             
-            // Create timeline block
+            // Create block
             const block = createBlock(event, position);
             container.appendChild(block);
 
-            // Create connecting line
+            // Create connector (except for first element)
             if (index > 0) {
                 const line = createConnector(index, position);
                 container.appendChild(line);
             }
 
-            // Create text labels
+            // Create text
             const text = createText(event, position);
             container.appendChild(text);
         });
+
+        console.log('Timeline rebuilt successfully');
     }
 
     function calculatePosition(index) {
         const startX = -(timelineEvents.length - 1) * timelineConfig.spacing / 2;
         return {
             x: startX + index * timelineConfig.spacing,
-            y: 0,
-            z: 0
+            y: timelineConfig.baseHeight,
+            z: -1 // Move timeline slightly in front of marker
         };
     }
 
@@ -141,7 +160,7 @@
 
     function createText(event, position) {
         const text = document.createElement('a-text');
-        text.setAttribute('value', `${event.year}\n${event.title}\n${event.description}`);
+        text.setAttribute('value', `${event.year}\\n${event.title}\\n${event.description}`);
         text.setAttribute('position', `${position.x} ${position.y + timelineConfig.textOffset} ${position.z}`);
         text.setAttribute('align', 'center');
         text.setAttribute('color', '#FFF');
@@ -151,147 +170,50 @@
     }
 
     /* --------------------- Orientation Handling --------------------- */
-    function initOrientationHandling() {
+    let currentBeta = 0;
+    let currentGamma = 0;
+
+    function updateOrientation(event) {
+        if (event.beta !== undefined) currentBeta = event.beta;
+        if (event.gamma !== undefined) currentGamma = event.gamma;
+
         const container = document.getElementById('timeline-container');
-        if (!container) {
-            console.error('Timeline container not found for orientation handling!');
-            return;
-        }
-        let lastOrientation = null;
-        let isPortrait = window.innerHeight > window.innerWidth;
+        if (!container) return;
 
-        // Function to update orientation based on device orientation
-        function updateOrientation(event) {
-            if (!event.beta || !event.gamma) {
-                console.log('No orientation data available');
-                return;
-            }
+        const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+        let rotationX = 0, rotationY = 0, rotationZ = 0;
 
-            const beta = event.beta;  // -180 to 180 (front/back tilt)
-            const gamma = event.gamma; // -90 to 90 (left/right tilt)
-
-            console.log(`Device orientation - Beta: ${beta}, Gamma: ${gamma}`);
-
-            // Determine if device is in portrait or landscape
-            isPortrait = window.innerHeight > window.innerWidth;
-
-            // Calculate rotation based on device orientation
-            let rotationX = 0;
-            let rotationY = 0;
-            let rotationZ = 0;
-
-            if (isPortrait) {
-                // Portrait mode adjustments
-                rotationX = -beta; // Tilt forward/backward
-                rotationY = gamma; // Tilt left/right
-            } else {
-                // Landscape mode adjustments
-                rotationX = -gamma; // Tilt left/right
-                rotationY = beta;   // Tilt forward/backward
-            }
-
-            // Apply smooth rotation
-            container.setAttribute('rotation', `${rotationX} ${rotationY} ${rotationZ}`);
-            console.log(`Applied rotation: ${rotationX}, ${rotationY}, ${rotationZ}`);
-            lastOrientation = { beta, gamma };
+        if (isPortrait) {
+            rotationX = -currentBeta;
+            rotationY = currentGamma;
+        } else {
+            rotationX = -currentGamma;
+            rotationY = currentBeta;
         }
 
-        // Add device orientation event listener
+        container.setAttribute('rotation', `${rotationX} ${rotationY} ${rotationZ}`);
+    }
+
+    function initOrientationHandling() {
         window.addEventListener('deviceorientation', updateOrientation);
-
-        // Add window resize listener to handle orientation changes
         window.addEventListener('resize', () => {
-            isPortrait = window.innerHeight > window.innerWidth;
-            if (lastOrientation) {
-                updateOrientation(lastOrientation);
-            }
+            updateOrientation({ beta: currentBeta, gamma: currentGamma });
         });
-    }
-  
-    /* ------------------------- GLB Model Loading ---------------------- */
-    function loadGLBModel(modelPath) {
-        const marker = document.getElementById('marker');
-        if (!marker) {
-            console.error('Marker element not found!');
-            return;
-        }
-
-        // Remove any existing model
-        const existingModel = marker.querySelector('[gltf-model]');
-        if (existingModel) {
-            existingModel.remove();
-        }
-
-        // Create the GLB model entity
-        const model = document.createElement('a-entity');
-        model.setAttribute('gltf-model', modelPath);
-        model.setAttribute('scale', '0.5 0.5 0.5');
-        model.setAttribute('position', '0 0.5 0');
-        model.setAttribute('rotation', '0 0 0');
-        model.setAttribute('animation-mixer', '');
-
-        // Add loading event listeners
-        model.addEventListener('model-loaded', () => {
-            console.log('Model loaded successfully:', modelPath);
-            updateStatus('marker-status', 'Model loaded successfully!');
-        });
-
-        model.addEventListener('model-error', (error) => {
-            console.error('Error loading model:', error);
-            updateStatus('marker-status', 'Error loading model!', true);
-        });
-
-        // Add the model to the marker
-        marker.appendChild(model);
-        console.log(`Attempting to load GLB model from ${modelPath}`);
-    }
-  
-    /* ------------------------- Marker Events ------------------------- */
-    function initMarkerEvents() {
-        const marker = document.getElementById('marker');
-        if (!marker) {
-            console.error('Marker element not found!');
-            return;
-        }
-
-        // Load the GLB model when marker is found
-        marker.addEventListener('markerFound', () => {
-            updateStatus('marker-status', 'Marker found!');
-            // Load the GLB model from the models directory
-            loadGLBModel('models/toothbrush.glb');
-        });
-
-        marker.addEventListener('markerLost', () => {
-            updateStatus('marker-status', 'Marker lost');
-        });
-
-        // Update tracking info
-        function updateTrackingInfo() {
-            const scene = document.querySelector('a-scene');
-            if (scene && scene.systems['arjs']) {
-                const arSystem = scene.systems['arjs'];
-                trackingInfo.textContent = `Tracking: ${arSystem.arProfile.trackingBackend} (${arSystem.arProfile.detectionMode})`;
-                console.log('AR.js tracking info updated:', arSystem.arProfile);
-            }
-        }
-
-        // Initial tracking info update
-        updateTrackingInfo();
     }
   
     /* -------------------- UI & Navigation Hooks -------------------- */
     function initUI() {
-      enterBtn.addEventListener('click', () => {
-        window.location.href = '/';
-      });
+      if (enterBtn) {
+        enterBtn.addEventListener('click', () => {
+          window.location.href = '/';
+        });
+      }
     }
   
     /* -------------------- Performance Tweaks -------------------- */
     function applyMobileOptimizations() {
-        const scene = document.querySelector('a-scene');
         if (!scene) return;
         
-        // Reduce render quality for mobile
         if (/Mobi|Android/i.test(navigator.userAgent)) {
             scene.setAttribute('renderer', 'antialias: false; precision: low');
         }
@@ -318,7 +240,7 @@
         spacing: 2.2,
         blockSize: 0.8,
         textOffset: 1.2,
-        baseHeight: 0,
+        baseHeight: 0.5,  // Increased for better visibility
         line: {
             color: '#FFFFFF',
             height: 0.1,
@@ -356,23 +278,23 @@
 
     /* --------------------------- Boot ------------------------------ */
     document.addEventListener('DOMContentLoaded', async () => {
+        console.log('Initializing AR experience...');
         updateStatus('browser-info', 'Initializing AR experience...');
+        
         initUI();
         applyMobileOptimizations();
 
         if (!await checkDeviceSupport()) return;
 
-        if (document.querySelector('a-scene').systems.arjs) {
-            document.querySelector('a-scene').systems.arjs.debug = false;
+        if (scene && scene.systems.arjs) {
+            scene.systems.arjs.debug = false;
         }
 
-        // Initialize test scene first
-        initTestScene();
-        
-        // Then initialize the full timeline
-        updateTimeline();
         initMarkerEvents();
         initOrientationHandling();
+        
+        // Initial timeline build
+        rebuildTimeline();
     });
 })();
   
