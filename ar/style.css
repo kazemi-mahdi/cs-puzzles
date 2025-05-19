@@ -46,10 +46,13 @@ a-marker > a-entity {
     font-family: Arial, sans-serif;
     white-space: pre;
     text-align: center;
-    mix-blend-mode: difference;
+    mix-blend-mode: normal;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     font-weight: bold;
+    will-change: transform;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
 }
 
 /* Mobile Optimizations */
@@ -57,10 +60,12 @@ a-marker > a-entity {
     a-scene {
         transform: translate3d(0,0,0);
         backface-visibility: hidden;
+        perspective: 1000px;
     }
     
     .timeline-text {
-        font-size: 0.4em;
+        font-size: 0.5em;
+        transform: translateZ(0);
     }
 }
 

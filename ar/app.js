@@ -96,7 +96,7 @@
             text.setAttribute('position', {
                 x: position.x,
                 y: position.y + CONFIG.textOffset,
-                z: -0.3
+                z: -0.2
             });
             text.setAttribute('rotation', {
                 x: -90,
@@ -105,11 +105,12 @@
             });
             text.setAttribute('align', 'center');
             text.setAttribute('color', '#FFF');
-            text.setAttribute('scale', '0.8 0.8 0.8');
+            text.setAttribute('scale', '0.6 0.6 0.6');
             text.setAttribute('look-at', '[camera]');
-            text.setAttribute('geometry', 'primitive: plane; width: 1.5');
-            text.setAttribute('material', 'color: #000; opacity: 0.7');
+            text.setAttribute('geometry', 'primitive: plane; width: 1.2; height: 0.8');
+            text.setAttribute('material', 'color: #000; opacity: 0.8; transparent: true');
             text.setAttribute('class', 'timeline-text');
+            text.setAttribute('animation', 'property: position; dir: alternate; dur: 2000; loop: true; to: 0 0.1 0');
             container.appendChild(text);
         });
     }
