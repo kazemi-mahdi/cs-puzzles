@@ -234,11 +234,45 @@
         });
     }
   
-    /* --------------------- Marker‑specific Events ------------------- */
+    /* ------------------------- GLB Model Loading ---------------------- */
+    function loadGLBModel(modelPath) {
+        const marker = document.getElementById('marker');
+        if (!marker) {
+            console.error('Marker element not found!');
+            return;
+        }
+
+        // Create the GLB model entity
+        const model = document.createElement('a-entity');
+        model.setAttribute('gltf-model', modelPath);
+        model.setAttribute('scale', '0.5 0.5 0.5'); // Adjust scale as needed
+        model.setAttribute('position', '0 0.5 0'); // Position slightly above the marker
+        model.setAttribute('rotation', '0 0 0');
+        model.setAttribute('animation-mixer', ''); // Enable animations if present
+
+        // Add the model to the marker
+        marker.appendChild(model);
+        console.log(`Loaded GLB model from ${modelPath}`);
+    }
+  
+    /* ------------------------- Marker Events ------------------------- */
     function initMarkerEvents() {
-        let markerFoundCount = 0;
-        let markerLostCount = 0;
-        let lastMarkerUpdate = Date.now();
+        const marker = document.getElementById('marker');
+        if (!marker) {
+            console.error('Marker element not found!');
+            return;
+        }
+
+        // Load the GLB model when marker is found
+        marker.addEventListener('markerFound', () => {
+            updateStatus('marker-status', 'Marker found!');
+            // Load the GLB model from the models directory
+            loadGLBModel('models/toothbrush.glb');
+        });
+
+        marker.addEventListener('markerLost', () => {
+            updateStatus('marker-status', 'Marker lost');
+        });
 
         // Update tracking info
         function updateTrackingInfo() {
@@ -252,28 +286,6 @@
 
         // Initial tracking info update
         updateTrackingInfo();
-
-        markerEl.addEventListener('markerFound', () => {
-            markerFoundCount++;
-            const now = Date.now();
-            if (now - lastMarkerUpdate > 1000) {
-                console.log('Marker found!', { count: markerFoundCount });
-                updateStatus('marker-status', `Marker detected! (Found: ${markerFoundCount} times)`);
-                markerInfo.textContent = `Marker: Found (${markerFoundCount} times)`;
-                lastMarkerUpdate = now;
-            }
-        });
-        
-        markerEl.addEventListener('markerLost', () => {
-            markerLostCount++;
-            const now = Date.now();
-            if (now - lastMarkerUpdate > 1000) {
-                console.log('Marker lost!', { count: markerLostCount });
-                updateStatus('marker-status', `Looking for marker... (Lost: ${markerLostCount} times)`);
-                markerInfo.textContent = `Marker: Lost (${markerLostCount} times)`;
-                lastMarkerUpdate = now;
-            }
-        });
     }
   
     /* -------------------- UI & Navigation Hooks -------------------- */
