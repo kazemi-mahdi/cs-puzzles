@@ -53,6 +53,27 @@ a-scene {
     height: 100% !important;
 }
 
+/* Add to style.css */
+.clickable {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.clickable:active {
+    transform: scale(0.95) !important;
+}
+
+a-scene {
+    touch-action: none; /* Prevent default touch behaviors */
+}
+
+/* Prevent text selection */
+a-text {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
 .timeline-text {
     font-family: Arial, sans-serif;
     white-space: pre;
