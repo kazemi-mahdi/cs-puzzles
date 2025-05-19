@@ -117,25 +117,9 @@ body.fallback a-scene {
 }
 
 /* Touch interaction optimizations */
-.clickable {
-    cursor: pointer;
+a-box {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    transition: transform 0.2s ease;
-}
-
-/* Mobile touch states */
-.clickable:active {
-    opacity: 0.8;
-    transform: scale(0.95);
-}
-
-/* Desktop hover states */
-@media (hover: hover) {
-    .clickable:hover {
-        opacity: 0.8;
-        transform: scale(1.05);
-    }
 }
 
 /* Mobile performance tweaks */
@@ -147,10 +131,24 @@ body.fallback a-scene {
     }
 }
 
-/* Text rendering */
+.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clickable:active {
+    opacity: 0.8;
+    transform: scale(0.95);
+}
+
+@media (hover: hover) {
+    .clickable:hover {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
 a-text {
     font-family: 'Arial', sans-serif;
     white-space: pre;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
 } 

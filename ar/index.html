@@ -17,22 +17,8 @@
     </div>
 
     <!-- AR Scene -->
-    <a-scene embedded 
-             vr-mode-ui="enabled: false" 
-             arjs="sourceType: webcam; 
-                   debugUIEnabled: false;
-                   detectionMode: mono;
-                   sourceWidth: 640;
-                   sourceHeight: 480;
-                   displayWidth: 640;
-                   displayHeight: 480;
-                   maxDetectionRate: 30;
-                   canvasWidth: 640;
-                   canvasHeight: 480;
-                   areaLearningButton: false;
-                   trackingMethod: best;
-                   patternRatio: 0.5;
-                   markerSize: 0.15;">
+    <a-scene embedded vr-mode-ui="enabled: false"
+             arjs="sourceType: webcam; debugUIEnabled: false">
         <a-marker preset="hiro" id="marker">
             <!-- Timeline Container -->
             <a-entity id="timeline-container" position="0 0.5 0">
