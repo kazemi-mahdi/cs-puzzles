@@ -24,20 +24,6 @@
             description: 'First Compiler',
             color: '#45B7D1',
             link: '/puzzles/grace-hopper.html'
-        },
-        {
-            year: '1989',
-            title: 'Tim Berners-Lee',
-            description: 'World Wide Web',
-            color: '#96CEB4',
-            link: '/puzzles/tim-berners-lee.html'
-        },
-        {
-            year: '2019',
-            title: 'Quantum Computing',
-            description: 'Quantum Supremacy',
-            color: '#FFEEAD',
-            link: '/puzzles/quantum-computing.html'
         }
     ];
   
@@ -52,24 +38,14 @@
   
     /* ------------------------ Support Check ------------------------- */
     async function checkDeviceSupport() {
-      // Check for iOS Safari
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      
-      if (isIOS && !isSafari) {
-        showFallback('Please use Safari on iOS for the best AR experience');
-        return false;
-      }
-
-      // Check camera support
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        showFallback('Camera API not supported on this device.');
+        updateStatus('browser-info', 'Camera API not supported on this device.', true);
         return false;
       }
 
       try {
         updateStatus('camera-status', 'Requesting camera access...');
-        const testStream = await navigator.mediaDevices.getUserMedia({ 
+        const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { 
             facingMode: 'environment',
             width: { ideal: 640 },
@@ -77,16 +53,11 @@
           } 
         });
         
-        // Get camera capabilities
-        const videoTrack = testStream.getVideoTracks()[0];
-        const capabilities = videoTrack.getCapabilities();
-        cameraInfo.textContent = `Camera: ${capabilities.width.max}x${capabilities.height.max}`;
-        
-        testStream.getTracks().forEach(t => t.stop());
+        stream.getTracks().forEach(t => t.stop());
         updateStatus('camera-status', 'Camera access granted!');
         return true;
       } catch (err) {
-        showFallback(`Unable to access the camera: ${err.message}`);
+        updateStatus('browser-info', `Unable to access the camera: ${err.message}`, true);
         return false;
       }
     }
@@ -102,67 +73,81 @@
       const element = document.getElementById(elementId);
       if (element) {
         element.textContent = message;
-        element.style.color = isError ? '#FF6B6B' : element.style.color;
+        element.style.color = isError ? '#FF6B6B' : '#FFFFFF';
       }
     }
 
     /* -------------------------- Timeline ---------------------------- */
-    function createTimelineBlock(data, position) {
+    function createTimeline() {
         const container = document.getElementById('timeline-container');
-        if (!container) {
-            console.error('Timeline container not found!');
-            return;
-        }
+        if (!container) return;
 
-        // Create block
+        container.innerHTML = '';
+        
+        timelineEvents.forEach((event, index) => {
+            const position = calculatePosition(index);
+            
+            // Create timeline block
+            const block = createBlock(event, position);
+            container.appendChild(block);
+
+            // Create connecting line
+            if (index > 0) {
+                const line = createConnector(index, position);
+                container.appendChild(line);
+            }
+
+            // Create text labels
+            const text = createText(event, position);
+            container.appendChild(text);
+        });
+    }
+
+    function calculatePosition(index) {
+        const startX = -(timelineEvents.length - 1) * timelineConfig.spacing / 2;
+        return {
+            x: startX + index * timelineConfig.spacing,
+            y: 0,
+            z: 0
+        };
+    }
+
+    function createBlock(event, position) {
         const block = document.createElement('a-box');
         block.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
-        block.setAttribute('width', '1');
-        block.setAttribute('height', '0.5');
-        block.setAttribute('depth', '0.5');
-        block.setAttribute('color', data.color);
-        block.setAttribute('data-link', data.link);
-        block.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 30000');
-        block.setAttribute('cursor', 'rayOrigin: mouse');
-        block.classList.add('linkable');
-        
-        // Create title text
-        const title = document.createElement('a-text');
-        title.setAttribute('value', data.title);
-        title.setAttribute('position', '0 0.4 0.26');
-        title.setAttribute('align', 'center');
-        title.setAttribute('color', '#FFFFFF');
-        title.setAttribute('scale', '0.5 0.5 0.5');
-        title.setAttribute('look-at', '[camera]');
-        block.appendChild(title);
-        
-        // Create year text
-        const year = document.createElement('a-text');
-        year.setAttribute('value', data.year);
-        year.setAttribute('position', '0 0.2 0.26');
-        year.setAttribute('align', 'center');
-        year.setAttribute('color', '#FFFFFF');
-        year.setAttribute('scale', '0.4 0.4 0.4');
-        year.setAttribute('look-at', '[camera]');
-        block.appendChild(year);
-        
-        // Create description text
-        const desc = document.createElement('a-text');
-        desc.setAttribute('value', data.description);
-        desc.setAttribute('position', '0 0 0.26');
-        desc.setAttribute('align', 'center');
-        desc.setAttribute('color', '#FFFFFF');
-        desc.setAttribute('scale', '0.3 0.3 0.3');
-        desc.setAttribute('look-at', '[camera]');
-        block.appendChild(desc);
+        block.setAttribute('width', timelineConfig.blockSize);
+        block.setAttribute('height', timelineConfig.blockSize);
+        block.setAttribute('depth', timelineConfig.blockSize);
+        block.setAttribute('color', event.color);
+        block.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 15000');
+        block.setAttribute('class', 'clickable');
+        block.addEventListener('click', () => window.location = event.link);
+        return block;
+    }
 
-        // Add click handler
-        block.addEventListener('click', () => {
-            window.location.href = data.link;
-        });
+    function createConnector(index, position) {
+        const prevPosition = calculatePosition(index - 1);
+        const lineLength = timelineConfig.spacing - timelineConfig.blockSize;
+        const centerX = (prevPosition.x + position.x) / 2;
+        
+        const line = document.createElement('a-box');
+        line.setAttribute('position', `${centerX} ${position.y} ${position.z}`);
+        line.setAttribute('width', lineLength);
+        line.setAttribute('height', timelineConfig.line.height);
+        line.setAttribute('depth', timelineConfig.line.depth);
+        line.setAttribute('color', timelineConfig.line.color);
+        return line;
+    }
 
-        container.appendChild(block);
-        console.log(`Created block for ${data.title} at position (${position.x}, ${position.y}, ${position.z})`);
+    function createText(event, position) {
+        const text = document.createElement('a-text');
+        text.setAttribute('value', `${event.year}\n${event.title}\n${event.description}`);
+        text.setAttribute('position', `${position.x} ${position.y + timelineConfig.textOffset} ${position.z}`);
+        text.setAttribute('align', 'center');
+        text.setAttribute('color', '#FFF');
+        text.setAttribute('scale', '0.5 0.5 0.5');
+        text.setAttribute('look-at', '[camera]');
+        return text;
     }
 
     /* --------------------- Orientation Handling --------------------- */
@@ -330,9 +315,14 @@
 
     /* ---------------------------- Config ---------------------------- */
     const timelineConfig = {
-        spacing: 1.5,
-        baseHeight: 0.5,
-        blockSize: { width: 1, height: 0.5, depth: 0.5 }
+        spacing: 2.2,
+        blockSize: 0.8,
+        textOffset: 1.2,
+        line: {
+            color: '#FFFFFF',
+            height: 0.1,
+            depth: 0.1
+        }
     };
 
     /* ---------------------- Timeline Management -------------------- */
@@ -370,6 +360,10 @@
         applyMobileOptimizations();
 
         if (!await checkDeviceSupport()) return;
+
+        if (document.querySelector('a-scene').systems.arjs) {
+            document.querySelector('a-scene').systems.arjs.debug = false;
+        }
 
         // Initialize test scene first
         initTestScene();
