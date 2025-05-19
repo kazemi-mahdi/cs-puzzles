@@ -318,6 +318,7 @@
         spacing: 2.2,
         blockSize: 0.8,
         textOffset: 1.2,
+        baseHeight: 0,
         line: {
             color: '#FFFFFF',
             height: 0.1,
