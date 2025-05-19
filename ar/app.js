@@ -4,8 +4,9 @@
     const CONFIG = {
         spacing: 2.2,
         blockSize: 0.8,
-        textOffset: 1.2,
+        textOffset: 1.5,  // Increased vertical offset
         baseHeight: 0.5,
+        textScale: 0.8,
         line: { color: '#FFF', height: 0.1, depth: 0.1 }
     };
 
@@ -33,7 +34,6 @@
         }
     ];
 
-    // DOM Elements
     const elements = {
         status: {
             browser: document.getElementById('browser-info'),
@@ -42,10 +42,9 @@
         },
         scene: document.querySelector('a-scene'),
         marker: document.getElementById('marker'),
-        fallback: document.getElementById('fallback')
+        container: document.getElementById('timeline-container')
     };
 
-    // Core Functions
     async function initializeAR() {
         try {
             if (!navigator.mediaDevices?.getUserMedia) {
@@ -68,50 +67,14 @@
     }
 
     function buildTimeline() {
-        const container = document.getElementById('timeline-container');
-        if (!container) return;
+        if (!elements.container) return;
+        elements.container.innerHTML = '';
 
-        container.innerHTML = '';
-        
         TIMELINE_DATA.forEach((event, index) => {
             const position = calculatePosition(index);
-            
-            // Create block
-            const block = document.createElement('a-box');
-            block.setAttribute('position', `${position.x} ${position.y} 0`);
-            block.setAttribute('width', CONFIG.blockSize);
-            block.setAttribute('height', CONFIG.blockSize);
-            block.setAttribute('depth', CONFIG.blockSize);
-            block.setAttribute('color', event.color);
-            block.setAttribute('class', 'timeline-block');
-            block.addEventListener('click', () => navigateTo(event.link));
-            container.appendChild(block);
-
-            // Create connector
-            if (index > 0) createConnector(index, position, container);
-
-            // Create text
-            const text = document.createElement('a-text');
-            text.setAttribute('value', `${event.year}\n${event.title}\n${event.description}`);
-            text.setAttribute('position', {
-                x: position.x,
-                y: position.y + CONFIG.textOffset,
-                z: -0.2
-            });
-            text.setAttribute('rotation', {
-                x: -90,
-                y: 0,
-                z: 0
-            });
-            text.setAttribute('align', 'center');
-            text.setAttribute('color', '#FFF');
-            text.setAttribute('scale', '0.6 0.6 0.6');
-            text.setAttribute('look-at', '[camera]');
-            text.setAttribute('geometry', 'primitive: plane; width: 1.2; height: 0.8');
-            text.setAttribute('material', 'color: #000; opacity: 0.8; transparent: true');
-            text.setAttribute('class', 'timeline-text');
-            text.setAttribute('animation', 'property: position; dir: alternate; dur: 2000; loop: true; to: 0 0.1 0');
-            container.appendChild(text);
+            createBlock(event, position);
+            createConnector(index, position);
+            createTextLabel(event, position);
         });
     }
 
@@ -119,43 +82,82 @@
         const startX = -(TIMELINE_DATA.length - 1) * CONFIG.spacing / 2;
         return {
             x: startX + index * CONFIG.spacing,
-            y: CONFIG.baseHeight
+            y: CONFIG.baseHeight,
+            z: 0
         };
     }
 
-    function createConnector(index, position, container) {
+    function createBlock(event, position) {
+        const block = document.createElement('a-box');
+        block.setAttribute('position', position);
+        block.setAttribute('width', CONFIG.blockSize);
+        block.setAttribute('height', CONFIG.blockSize);
+        block.setAttribute('depth', CONFIG.blockSize);
+        block.setAttribute('color', event.color);
+        block.setAttribute('class', 'timeline-block');
+        block.addEventListener('click', () => navigateTo(event.link));
+        elements.container.appendChild(block);
+    }
+
+    function createConnector(index, position) {
+        if (index === 0) return;
+        
         const prevPos = calculatePosition(index - 1);
         const line = document.createElement('a-box');
-        line.setAttribute('position', `${(prevPos.x + position.x)/2} ${position.y} 0`);
+        line.setAttribute('position', {
+            x: (prevPos.x + position.x) / 2,
+            y: position.y,
+            z: position.z
+        });
         line.setAttribute('width', CONFIG.spacing - CONFIG.blockSize);
         line.setAttribute('height', CONFIG.line.height);
         line.setAttribute('depth', CONFIG.line.depth);
         line.setAttribute('color', CONFIG.line.color);
-        container.appendChild(line);
+        elements.container.appendChild(line);
     }
 
-    // Event Handlers
+    function createTextLabel(event, position) {
+        const text = document.createElement('a-entity');
+        text.setAttribute('position', {
+            x: position.x,
+            y: position.y + CONFIG.textOffset,
+            z: position.z - 0.5  // Bring text in front of blocks
+        });
+        text.setAttribute('look-at', '[camera]');
+        text.setAttribute('text', {
+            value: `${event.year}\n${event.title}\n${event.description}`,
+            align: 'center',
+            color: '#FFF',
+            width: 4,
+            wrapCount: 20
+        });
+        text.setAttribute('geometry', 'primitive: plane; width: auto; height: auto');
+        text.setAttribute('material', 'color: #000; opacity: 0.7; transparent: true');
+        text.setAttribute('scale', CONFIG.textScale);
+        elements.container.appendChild(text);
+    }
+
     function setupMarkerHandlers() {
         if (!elements.marker) return;
 
         elements.marker.addEventListener('markerFound', () => {
             updateStatus('marker', 'Marker detected');
-            elements.marker.setAttribute('visible', 'true');
+            elements.container.setAttribute('visible', 'true');
         });
 
         elements.marker.addEventListener('markerLost', () => {
             updateStatus('marker', 'Searching for marker...');
-            elements.marker.setAttribute('visible', 'false');
+            elements.container.setAttribute('visible', 'false');
         });
     }
 
     function setupPerformance() {
         if (/Mobi|Android/i.test(navigator.userAgent)) {
             elements.scene.setAttribute('renderer', 'antialias: false; precision: low');
+            CONFIG.textScale = 0.6;  // Smaller text on mobile
         }
     }
 
-    // Helpers
     function updateStatus(type, message, isError = false) {
         if (elements.status[type]) {
             elements.status[type].textContent = message;
@@ -164,7 +166,7 @@
     }
 
     function showFallback(reason) {
-        elements.fallback.classList.add('visible');
+        document.getElementById('fallback').classList.add('visible');
         document.getElementById('fallback-reason').textContent = reason;
     }
 
@@ -172,7 +174,6 @@
         window.location.href = url;
     }
 
-    // Initialization
     document.addEventListener('DOMContentLoaded', () => {
         initializeAR();
         document.getElementById('enter-site').addEventListener('click', () => {

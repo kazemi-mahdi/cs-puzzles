@@ -42,6 +42,17 @@ a-marker > a-entity {
     opacity: 0.8;
 }
 
+a-text {
+    font-family: Arial, sans-serif;
+    mix-blend-mode: difference;
+    pointer-events: none;
+}
+
+a-scene {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 .timeline-text {
     font-family: Arial, sans-serif;
     white-space: pre;
