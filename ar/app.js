@@ -7,14 +7,7 @@
         textOffset: 1.5,
         baseHeight: 0.5,
         textScale: 0.8,
-        stabilization: 0.98,
-        line: { color: '#FFF', height: 0.1, depth: 0.1 },
-        physics: {
-            gravity: 0,
-            maxInterval: 1/30,
-            iterations: 10,
-            damping: 0.99
-        }
+        line: { color: '#FFF', height: 0.1, depth: 0.1 }
     };
 
     const TIMELINE_DATA = [
@@ -74,6 +67,7 @@
         },
         scene: document.querySelector('a-scene'),
         marker: document.getElementById('marker'),
+        cameraContainer: document.getElementById('camera-container'),
         container: document.getElementById('timeline-container'),
         fallback: document.getElementById('fallback'),
         loader: document.getElementById('loader'),
@@ -171,27 +165,23 @@
             position: `${position.x} ${position.y} ${position.z}`
         });
         
-        // Add static-body to prevent physics-based movement
-        block.setAttribute('static-body', '');
         elements.container.appendChild(block);
 
-        // Create text with static positioning
+        // Create text
         const text = document.createElement('a-text');
         text.setAttribute('value', `${event.year}\n${event.title[i18n.currentLang]}\n${event.description[i18n.currentLang]}`);
         text.setAttribute('position', {
             x: position.x,
             y: position.y + CONFIG.textOffset,
-            z: -0.2
+            z: 0
         });
         text.setAttribute('rotation', { x: -90, y: 0, z: 0 });
         text.setAttribute('align', 'center');
         text.setAttribute('color', '#FFF');
         text.setAttribute('scale', `${CONFIG.textScale} ${CONFIG.textScale} ${CONFIG.textScale}`);
-        text.setAttribute('look-at', '[camera]');
         text.setAttribute('geometry', 'primitive: plane; width: 1.2; height: 0.8');
         text.setAttribute('material', 'color: #000; opacity: 0.8; transparent: true');
         text.setAttribute('class', 'timeline-text');
-        text.setAttribute('static-body', '');
         elements.container.appendChild(text);
     }
 
@@ -203,46 +193,7 @@
         line.setAttribute('height', CONFIG.line.height);
         line.setAttribute('depth', CONFIG.line.depth);
         line.setAttribute('color', CONFIG.line.color);
-        line.setAttribute('static-body', '');
         elements.container.appendChild(line);
-    }
-
-    // Stabilization handler
-    let lastPosition = null;
-    let stabilizationTimeout = null;
-    
-    function stabilizeElements() {
-        if (!elements.container) return;
-        
-        const currentPos = elements.container.getAttribute('position');
-        if (!lastPosition) {
-            lastPosition = currentPos;
-            return;
-        }
-
-        // Smooth position updates with increased stabilization
-        const smoothedPos = {
-            x: lastPosition.x * CONFIG.stabilization + currentPos.x * (1 - CONFIG.stabilization),
-            y: lastPosition.y * CONFIG.stabilization + currentPos.y * (1 - CONFIG.stabilization),
-            z: lastPosition.z * CONFIG.stabilization + currentPos.z * (1 - CONFIG.stabilization)
-        };
-
-        // Only update if the change is significant (increased threshold)
-        if (Math.abs(smoothedPos.x - lastPosition.x) > 0.005 ||
-            Math.abs(smoothedPos.y - lastPosition.y) > 0.005 ||
-            Math.abs(smoothedPos.z - lastPosition.z) > 0.005) {
-            
-            elements.container.setAttribute('position', smoothedPos);
-            lastPosition = smoothedPos;
-        }
-
-        // Use requestAnimationFrame with a longer timeout for less frequent updates
-        if (stabilizationTimeout) {
-            clearTimeout(stabilizationTimeout);
-        }
-        stabilizationTimeout = setTimeout(() => {
-            requestAnimationFrame(stabilizeElements);
-        }, 32); // Reduced from 60fps to 30fps for more stability
     }
 
     function setupMarkerHandlers() {
@@ -264,15 +215,6 @@
         if (/Mobi|Android/i.test(navigator.userAgent)) {
             elements.scene.setAttribute('renderer', 'antialias: false; precision: low');
         }
-        
-        // Add physics system with more stable settings
-        elements.scene.setAttribute('physics', {
-            driver: 'local',
-            gravity: 0,
-            maxInterval: 1/30,
-            iterations: 10,
-            damping: 0.99
-        });
     }
 
     function setupLanguageSwitcher() {
