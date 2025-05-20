@@ -48,7 +48,15 @@
               smoothThreshold: 10;
               maxDetectionRate: 60;
               canvasWidth: 640;
-              canvasHeight: 480;"
+              canvasHeight: 480;
+              sourceWidth: 640;
+              sourceHeight: 480;
+              displayWidth: 640;
+              displayHeight: 480;
+              areaLearningButton: false;
+              minConfidence: 0.6;
+              maxDetectionRate: 60;
+              detectionMode: mono_and_matrix;"
     >
         <a-marker preset="hiro" 
                   id="marker" 
@@ -58,7 +66,8 @@
                   smoothTolerance="0.005"
                   smoothThreshold="10"
                   raycaster="objects: .clickable"
-                  cursor="fuse: false">
+                  cursor="fuse: false"
+                  static-body="type: static; mass: 0; linearDamping: 0.9; angularDamping: 0.9">
             <a-entity id="timeline-container" 
                      position="0 0.5 0"
                      visible="false"

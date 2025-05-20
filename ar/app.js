@@ -170,7 +170,7 @@
         
         elements.container.appendChild(block);
 
-        // Create text
+        // Create text with improved stability
         const text = document.createElement('a-text');
         text.setAttribute('value', `${event.year}\n${event.title[i18n.currentLang]}\n${event.description[i18n.currentLang]}`);
         text.setAttribute('position', {
@@ -180,11 +180,20 @@
         });
         text.setAttribute('rotation', { x: -90, y: 0, z: 0 });
         text.setAttribute('align', 'center');
+        text.setAttribute('anchor', 'center');
+        text.setAttribute('baseline', 'center');
         text.setAttribute('color', '#FFF');
         text.setAttribute('scale', `${CONFIG.textScale} ${CONFIG.textScale} ${CONFIG.textScale}`);
+        text.setAttribute('look-at', '[camera]');
         text.setAttribute('geometry', 'primitive: plane; width: 1.2; height: 0.8');
         text.setAttribute('material', 'color: #000; opacity: 0.8; transparent: true');
         text.setAttribute('class', 'timeline-text');
+        text.setAttribute('static-body', {
+            type: 'static',
+            mass: 0,
+            linearDamping: 0.9,
+            angularDamping: 0.9
+        });
         elements.container.appendChild(text);
     }
 
