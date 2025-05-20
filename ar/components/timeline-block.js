@@ -25,6 +25,9 @@ AFRAME.registerComponent('timeline-block', {
             roughness: 0.5
         });
 
+        // Initially hide the element
+        this.el.setAttribute('visible', false);
+
         // Set initial position
         const position = this.data.position.split(' ').map(Number);
         this.el.setAttribute('position', {
@@ -43,6 +46,20 @@ AFRAME.registerComponent('timeline-block', {
             event.preventDefault();
             this.showMedia();
         });
+
+        // Listen for marker found event
+        const marker = document.querySelector('#marker');
+        if (marker) {
+            marker.addEventListener('markerFound', () => {
+                // Show the element when marker is found
+                this.el.setAttribute('visible', true);
+            });
+
+            marker.addEventListener('markerLost', () => {
+                // Hide the element when marker is lost
+                this.el.setAttribute('visible', false);
+            });
+        }
     },
 
     showMedia: function() {

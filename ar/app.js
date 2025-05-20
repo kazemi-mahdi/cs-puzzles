@@ -131,6 +131,9 @@
         if (!elements.container) return;
         elements.container.innerHTML = '';
         
+        // Initially hide the container
+        elements.container.setAttribute('visible', false);
+        
         // Add progress tracker
         elements.container.setAttribute('progress-tracker', {
             totalEvents: TIMELINE_DATA.length
@@ -202,12 +205,14 @@
         elements.marker.addEventListener('markerFound', () => {
             updateStatus('marker', i18n.translations[i18n.currentLang].markerFound);
             elements.marker.setAttribute('visible', 'true');
+            elements.container.setAttribute('visible', true);
             elements.container.setAttribute('interactive', 'true');
         });
 
         elements.marker.addEventListener('markerLost', () => {
             updateStatus('marker', i18n.translations[i18n.currentLang].markerSearch);
             elements.marker.setAttribute('visible', 'false');
+            elements.container.setAttribute('visible', false);
         });
     }
 
