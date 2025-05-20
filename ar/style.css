@@ -8,14 +8,124 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* AR Scene Fixes */
-a-scene {
-    width: 100% !important;
-    height: 100% !important;
+/* Loader */
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    color: white;
 }
 
-a-marker > a-entity {
-    visibility: visible !important;
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Language Switcher */
+#lang-switcher {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    gap: 5px;
+}
+
+#lang-switcher button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#lang-switcher button:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1500;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    margin: 15% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 8px;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.close {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Timeline Elements */
+.timeline-block {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: blockEnter 1.2s easeOutElastic;
+}
+
+@keyframes blockEnter {
+    0% { transform: translateY(-2m) scale(0.8); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.timeline-block:hover {
+    transform: scale(1.1) rotateY(15deg);
+}
+
+.timeline-block.visited {
+    opacity: 0.5;
+}
+
+.timeline-block.visited::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 24px;
 }
 
 /* Status Messages */
@@ -31,49 +141,18 @@ a-marker > a-entity {
     font-size: 0.9em;
 }
 
-/* Timeline Elements */
-.timeline-block {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.timeline-block:active {
-    transform: scale(0.95);
-    opacity: 0.8;
-}
-
-a-text {
-    font-family: Arial, sans-serif;
-    mix-blend-mode: difference;
-    pointer-events: none;
-}
-
+/* AR Scene Fixes */
 a-scene {
     width: 100% !important;
     height: 100% !important;
+    touch-action: none;
 }
 
-/* Add to style.css */
-.clickable {
-    cursor: pointer;
-    transition: transform 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
+a-marker > a-entity {
+    visibility: visible !important;
 }
 
-.clickable:active {
-    transform: scale(0.95) !important;
-}
-
-a-scene {
-    touch-action: none; /* Prevent default touch behaviors */
-}
-
-/* Prevent text selection */
-a-text {
-    user-select: none;
-    -webkit-user-select: none;
-}
-
+/* Text Elements */
 .timeline-text {
     font-family: Arial, sans-serif;
     white-space: pre;
@@ -85,19 +164,29 @@ a-text {
     will-change: transform;
     transform-style: preserve-3d;
     backface-visibility: hidden;
+    animation: textFadeIn 0.8s ease;
+}
+
+@keyframes textFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Mobile Optimizations */
 @media (max-width: 768px) {
-    a-scene {
-        transform: translate3d(0,0,0);
-        backface-visibility: hidden;
-        perspective: 1000px;
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
     }
     
     .timeline-text {
         font-size: 0.5em;
         transform: translateZ(0);
+    }
+    
+    #lang-switcher {
+        top: auto;
+        bottom: 10px;
     }
 }
 
@@ -119,4 +208,23 @@ a-text {
 
 #fallback.visible {
     display: flex;
+}
+
+/* Progress Badge */
+.progress-badge {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(52, 152, 219, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    animation: badgeSlideUp 0.5s ease;
+}
+
+@keyframes badgeSlideUp {
+    from { transform: translate(-50%, 100%); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
 }

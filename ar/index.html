@@ -5,22 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CS Timeline AR</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Core AR Libraries -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
+    <!-- Additional Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@21.6.10/dist/umd/i18next.min.js"></script>
+    <script src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX" async></script>
+    <!-- Custom Components -->
+    <script src="components/timeline-block.js"></script>
+    <script src="components/progress-tracker.js"></script>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <p id="loader-text">Initializing AR...</p>
+    </div>
+
+    <!-- Status Messages -->
     <div id="status-messages" class="status-container">
         <div id="browser-info">Initializing...</div>
         <div id="camera-status"></div>
         <div id="marker-status"></div>
     </div>
 
+    <!-- Language Switcher -->
+    <div id="lang-switcher">
+        <button data-lang="en">EN</button>
+        <button data-lang="es">ES</button>
+    </div>
+
+    <!-- AR Scene -->
     <a-scene 
         embedded
         vr-mode-ui="enabled: false"
         arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;"
     >
-        <a-marker preset="hiro" id="marker">
+        <a-marker preset="hiro" id="marker" emitevents="true">
             <a-entity id="timeline-container" position="0 0.5 0"></a-entity>
             <a-text value="Computer Science Timeline"
                     position="0 2.2 0"
@@ -35,6 +56,16 @@
         <a-entity camera></a-entity>
     </a-scene>
 
+    <!-- Media Modal -->
+    <div id="media-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-media"></div>
+            <div id="modal-description"></div>
+        </div>
+    </div>
+
+    <!-- Fallback Message -->
     <div id="fallback" class="hidden">
         <p>Your browser can't show AR. Tap to explore the puzzles instead.</p>
         <p id="fallback-reason" class="fallback-reason"></p>
@@ -42,6 +73,7 @@
 
     <button id="enter-site">Enter Site</button>
 
+    <!-- Main Application Script -->
     <script src="app.js"></script>
 </body>
 </html>

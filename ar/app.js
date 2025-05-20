@@ -13,25 +13,49 @@
 
     const TIMELINE_DATA = [
         {
+            id: 'ada-1843',
             year: '1843',
-            title: 'Ada Lovelace',
-            description: 'First Computer Program',
+            title: { en: 'Ada Lovelace', es: 'Ada Lovelace' },
+            description: { 
+                en: 'First Computer Program',
+                es: 'Primer Programa de Computadora'
+            },
             color: '#FF6B6B',
-            link: '/ada-lovelace'
+            media: {
+                type: 'image',
+                url: 'media/ada.jpg',
+                thumbnail: 'thumbnails/ada-thumb.webp'
+            }
         },
         {
+            id: 'turing-1936',
             year: '1936',
-            title: 'Alan Turing',
-            description: 'Turing Machine',
+            title: { en: 'Alan Turing', es: 'Alan Turing' },
+            description: {
+                en: 'Turing Machine',
+                es: 'Máquina de Turing'
+            },
             color: '#4ECDC4',
-            link: '/alan-turing'
+            media: {
+                type: 'image',
+                url: 'media/turing.jpg',
+                thumbnail: 'thumbnails/turing-thumb.webp'
+            }
         },
         {
+            id: 'hopper-1952',
             year: '1952',
-            title: 'Grace Hopper',
-            description: 'First Compiler',
+            title: { en: 'Grace Hopper', es: 'Grace Hopper' },
+            description: {
+                en: 'First Compiler',
+                es: 'Primer Compilador'
+            },
             color: '#45B7D1',
-            link: '/grace-hopper'
+            media: {
+                type: 'image',
+                url: 'media/hopper.jpg',
+                thumbnail: 'thumbnails/hopper-thumb.webp'
+            }
         }
     ];
 
@@ -45,18 +69,43 @@
         scene: document.querySelector('a-scene'),
         marker: document.getElementById('marker'),
         container: document.getElementById('timeline-container'),
-        fallback: document.getElementById('fallback')
+        fallback: document.getElementById('fallback'),
+        loader: document.getElementById('loader'),
+        loaderText: document.getElementById('loader-text')
+    };
+
+    // i18n Configuration
+    const i18n = {
+        currentLang: 'en',
+        translations: {
+            en: {
+                loading: 'Initializing AR...',
+                cameraAccess: 'Accessing camera...',
+                markerSearch: 'Searching for marker...',
+                markerFound: 'Marker detected',
+                error: 'Error: '
+            },
+            es: {
+                loading: 'Inicializando AR...',
+                cameraAccess: 'Accediendo a la cámara...',
+                markerSearch: 'Buscando marcador...',
+                markerFound: 'Marcador detectado',
+                error: 'Error: '
+            }
+        }
     };
 
     // Core Functions
     async function initializeAR() {
         try {
+            updateLoader(0, i18n.translations[i18n.currentLang].loading);
+            
             if (!navigator.mediaDevices?.getUserMedia) {
                 showFallback('Camera API not supported');
                 return;
             }
 
-            updateStatus('camera', 'Accessing camera...');
+            updateLoader(30, i18n.translations[i18n.currentLang].cameraAccess);
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment' }
             });
@@ -67,16 +116,25 @@
 
             setupMarkerHandlers();
             setupPerformance();
+            setupLanguageSwitcher();
             buildTimeline();
 
+            updateLoader(100, '');
+            elements.loader.style.display = 'none';
+
         } catch (error) {
-            showFallback(`Camera error: ${error.message}`);
+            showFallback(`${i18n.translations[i18n.currentLang].error}${error.message}`);
         }
     }
 
     function buildTimeline() {
         if (!elements.container) return;
         elements.container.innerHTML = '';
+        
+        // Add progress tracker
+        elements.container.setAttribute('progress-tracker', {
+            totalEvents: TIMELINE_DATA.length
+        });
         
         TIMELINE_DATA.forEach((event, index) => {
             const position = calculatePosition(index);
@@ -96,35 +154,22 @@
 
     function createBlock(event, position) {
         const block = document.createElement('a-box');
-        block.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
-        block.setAttribute('width', CONFIG.blockSize);
-        block.setAttribute('height', CONFIG.blockSize);
-        block.setAttribute('depth', CONFIG.blockSize);
-        block.setAttribute('color', event.color);
-        block.setAttribute('class', 'timeline-block clickable');
+        block.setAttribute('timeline-block', {
+            eventId: event.id,
+            year: event.year,
+            title: event.title[i18n.currentLang],
+            description: event.description[i18n.currentLang],
+            color: event.color,
+            mediaUrl: event.media.url,
+            mediaType: event.media.type,
+            position: `${position.x} ${position.y} ${position.z}`
+        });
         
-        // Add stabilization animation
-        block.setAttribute('animation__pos', {
-            property: 'position',
-            dur: 300,
-            easing: 'easeOutQuad',
-            to: `${position.x} ${position.y} ${position.z}`
-        });
-
-        // Add click/touch handlers
-        block.addEventListener('click', () => handleNavigation(event.link));
-        block.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            handleNavigation(event.link);
-        });
-
-        // Add physics body for stability
-        block.setAttribute('static-body', '');
         elements.container.appendChild(block);
 
         // Create text
         const text = document.createElement('a-text');
-        text.setAttribute('value', `${event.year}\n${event.title}\n${event.description}`);
+        text.setAttribute('value', `${event.year}\n${event.title[i18n.currentLang]}\n${event.description[i18n.currentLang]}`);
         text.setAttribute('position', {
             x: position.x,
             y: position.y + CONFIG.textOffset,
@@ -179,14 +224,14 @@
         if (!elements.marker) return;
 
         elements.marker.addEventListener('markerFound', () => {
-            updateStatus('marker', 'Marker detected');
+            updateStatus('marker', i18n.translations[i18n.currentLang].markerFound);
             elements.marker.setAttribute('visible', 'true');
             stabilizeElements();
             elements.container.setAttribute('interactive', 'true');
         });
 
         elements.marker.addEventListener('markerLost', () => {
-            updateStatus('marker', 'Searching for marker...');
+            updateStatus('marker', i18n.translations[i18n.currentLang].markerSearch);
             elements.marker.setAttribute('visible', 'false');
         });
     }
@@ -194,6 +239,32 @@
     function setupPerformance() {
         if (/Mobi|Android/i.test(navigator.userAgent)) {
             elements.scene.setAttribute('renderer', 'antialias: false; precision: low');
+        }
+    }
+
+    function setupLanguageSwitcher() {
+        const buttons = document.querySelectorAll('#lang-switcher button');
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const lang = button.dataset.lang;
+                setLanguage(lang);
+            });
+        });
+    }
+
+    function setLanguage(lang) {
+        i18n.currentLang = lang;
+        buildTimeline();
+        
+        // Update status messages
+        updateStatus('marker', i18n.translations[lang].markerSearch);
+        
+        // Track language change
+        if (window.gtag) {
+            gtag('event', 'languageChange', {
+                'event_category': 'Settings',
+                'event_label': lang
+            });
         }
     }
 
@@ -205,18 +276,32 @@
         }
     }
 
+    function updateLoader(progress, message) {
+        if (elements.loaderText) {
+            elements.loaderText.textContent = message;
+        }
+    }
+
     function showFallback(reason) {
         elements.fallback.classList.add('visible');
         document.getElementById('fallback-reason').textContent = reason;
     }
 
-    function handleNavigation(url) {
-        window.location.href = url;
+    // Analytics
+    function initializeAnalytics() {
+        if (window.gtag) {
+            gtag('event', 'page_view', {
+                'page_title': 'CS Timeline AR',
+                'page_location': window.location.href
+            });
+        }
     }
 
     // Initialization
     document.addEventListener('DOMContentLoaded', () => {
         initializeAR();
+        initializeAnalytics();
+        
         document.getElementById('enter-site').addEventListener('click', () => {
             window.location.href = '/';
         });
