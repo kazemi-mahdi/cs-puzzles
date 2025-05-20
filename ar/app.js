@@ -2,12 +2,12 @@
     'use strict';
 
     const CONFIG = {
-        spacing: 1.5,
-        blockSize: 0.4,
-        textOffset: 0.8,
+        spacing: 2.2,
+        blockSize: 0.8,
+        textOffset: 1.5,
         baseHeight: 0.5,
-        textScale: 0.4,
-        line: { color: '#FFF', height: 0.05, depth: 0.05 }
+        textScale: 0.8,
+        line: { color: '#FFF', height: 0.1, depth: 0.1 }
     };
 
     const TIMELINE_DATA = [
@@ -202,6 +202,12 @@
     function setupMarkerHandlers() {
         if (!elements.marker) return;
 
+        // Add raycaster to scene for click detection
+        elements.scene.setAttribute('raycaster', {
+            objects: '.clickable',
+            enabled: true
+        });
+
         elements.marker.addEventListener('markerFound', () => {
             updateStatus('marker', i18n.translations[i18n.currentLang].markerFound);
             elements.marker.setAttribute('visible', 'true');
@@ -235,6 +241,12 @@
         if (/Mobi|Android/i.test(navigator.userAgent)) {
             elements.scene.setAttribute('renderer', 'antialias: false; precision: low');
         }
+
+        // Add cursor component for better interaction
+        elements.scene.setAttribute('cursor', {
+            rayOrigin: 'mouse',
+            fuse: false
+        });
     }
 
     function setupLanguageSwitcher() {
