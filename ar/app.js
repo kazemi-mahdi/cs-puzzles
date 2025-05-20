@@ -171,9 +171,11 @@
             position: `${position.x} ${position.y} ${position.z}`
         });
         
+        // Add static-body to prevent physics-based movement
+        block.setAttribute('static-body', '');
         elements.container.appendChild(block);
 
-        // Create text
+        // Create text with static positioning
         const text = document.createElement('a-text');
         text.setAttribute('value', `${event.year}\n${event.title[i18n.currentLang]}\n${event.description[i18n.currentLang]}`);
         text.setAttribute('position', {
@@ -189,6 +191,7 @@
         text.setAttribute('geometry', 'primitive: plane; width: 1.2; height: 0.8');
         text.setAttribute('material', 'color: #000; opacity: 0.8; transparent: true');
         text.setAttribute('class', 'timeline-text');
+        text.setAttribute('static-body', '');
         elements.container.appendChild(text);
     }
 
@@ -200,6 +203,7 @@
         line.setAttribute('height', CONFIG.line.height);
         line.setAttribute('depth', CONFIG.line.depth);
         line.setAttribute('color', CONFIG.line.color);
+        line.setAttribute('static-body', '');
         elements.container.appendChild(line);
     }
 
@@ -247,7 +251,6 @@
         elements.marker.addEventListener('markerFound', () => {
             updateStatus('marker', i18n.translations[i18n.currentLang].markerFound);
             elements.marker.setAttribute('visible', 'true');
-            stabilizeElements();
             elements.container.setAttribute('interactive', 'true');
         });
 

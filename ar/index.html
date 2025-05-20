@@ -39,10 +39,25 @@
     <a-scene 
         embedded
         vr-mode-ui="enabled: false"
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; trackingMethod: best;"
+        arjs="sourceType: webcam; 
+              debugUIEnabled: false; 
+              detectionMode: mono; 
+              trackingMethod: best;
+              smoothCount: 10;
+              smoothTolerance: 0.01;
+              smoothThreshold: 5;"
     >
-        <a-marker preset="hiro" id="marker" emitevents="true">
-            <a-entity id="timeline-container" position="0 0.5 0"></a-entity>
+        <a-marker preset="hiro" 
+                  id="marker" 
+                  emitevents="true"
+                  smooth="true"
+                  smoothCount="10"
+                  smoothTolerance="0.01"
+                  smoothThreshold="5">
+            <a-entity id="timeline-container" 
+                     position="0 0.5 0"
+                     static-body>
+            </a-entity>
             <a-text value="Computer Science Timeline"
                     position="0 1.2 -1"
                     align="center"
