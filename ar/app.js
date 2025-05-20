@@ -7,8 +7,13 @@
         textOffset: 1.5,
         baseHeight: 0.5,
         textScale: 0.8,
-        stabilization: 0.8,
-        line: { color: '#FFF', height: 0.1, depth: 0.1 }
+        stabilization: 0.95,
+        line: { color: '#FFF', height: 0.1, depth: 0.1 },
+        physics: {
+            gravity: 0,
+            maxInterval: 1/60,
+            iterations: 20
+        }
     };
 
     const TIMELINE_DATA = [
@@ -199,6 +204,8 @@
 
     // Stabilization handler
     let lastPosition = null;
+    let stabilizationTimeout = null;
+    
     function stabilizeElements() {
         if (!elements.container) return;
         
@@ -208,16 +215,29 @@
             return;
         }
 
-        // Smooth position updates
+        // Smooth position updates with increased stabilization
         const smoothedPos = {
             x: lastPosition.x * CONFIG.stabilization + currentPos.x * (1 - CONFIG.stabilization),
             y: lastPosition.y * CONFIG.stabilization + currentPos.y * (1 - CONFIG.stabilization),
             z: lastPosition.z * CONFIG.stabilization + currentPos.z * (1 - CONFIG.stabilization)
         };
 
-        elements.container.setAttribute('position', smoothedPos);
-        lastPosition = smoothedPos;
-        requestAnimationFrame(stabilizeElements);
+        // Only update if the change is significant
+        if (Math.abs(smoothedPos.x - lastPosition.x) > 0.001 ||
+            Math.abs(smoothedPos.y - lastPosition.y) > 0.001 ||
+            Math.abs(smoothedPos.z - lastPosition.z) > 0.001) {
+            
+            elements.container.setAttribute('position', smoothedPos);
+            lastPosition = smoothedPos;
+        }
+
+        // Use requestAnimationFrame with a timeout to prevent excessive updates
+        if (stabilizationTimeout) {
+            clearTimeout(stabilizationTimeout);
+        }
+        stabilizationTimeout = setTimeout(() => {
+            requestAnimationFrame(stabilizeElements);
+        }, 16); // Approximately 60fps
     }
 
     function setupMarkerHandlers() {
@@ -240,6 +260,14 @@
         if (/Mobi|Android/i.test(navigator.userAgent)) {
             elements.scene.setAttribute('renderer', 'antialias: false; precision: low');
         }
+        
+        // Add physics system
+        elements.scene.setAttribute('physics', {
+            driver: 'local',
+            gravity: 0,
+            maxInterval: 1/60,
+            iterations: 20
+        });
     }
 
     function setupLanguageSwitcher() {

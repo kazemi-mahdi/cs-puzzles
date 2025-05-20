@@ -14,16 +14,20 @@ AFRAME.registerComponent('timeline-block', {
         this.el.setAttribute('class', 'timeline-block clickable');
         this.el.setAttribute('static-body', '');
         
-        // Add entrance animation
+        // Set initial position
+        this.el.setAttribute('position', this.data.position);
+        
+        // Add entrance animation with improved timing
         this.el.setAttribute('animation__enter', {
             property: 'position',
             from: `${this.data.position.x} ${this.data.position.y - 2} ${this.data.position.z}`,
             to: `${this.data.position.x} ${this.data.position.y} ${this.data.position.z}`,
-            dur: 1200,
-            easing: 'easeOutElastic'
+            dur: 1500,
+            easing: 'easeOutElastic',
+            elasticity: 400
         });
 
-        // Add hover animation
+        // Add hover animation with improved stability
         this.el.setAttribute('animation__hover', {
             property: 'scale',
             startEvents: 'mouseenter',
@@ -40,6 +44,13 @@ AFRAME.registerComponent('timeline-block', {
             to: '1 1 1',
             dur: 300,
             easing: 'easeOutQuad'
+        });
+
+        // Add physics body for stability
+        this.el.setAttribute('dynamic-body', {
+            mass: 0,
+            linearDamping: 0.9,
+            angularDamping: 0.9
         });
 
         // Add click handler
