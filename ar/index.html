@@ -54,13 +54,9 @@
                   smoothCount="10"
                   smoothTolerance="0.01"
                   smoothThreshold="5">
-        </a-marker>
-
-        <!-- Camera-relative container -->
-        <a-entity id="camera-container" position="0 0 -2">
             <a-entity id="timeline-container" 
                      position="0 0.5 0"
-                     static-body>
+                     visible="false">
             </a-entity>
             <a-text value="Computer Science Timeline"
                     position="0 1.2 0"
@@ -72,10 +68,10 @@
                     rotation="-90 0 0"
                     geometry="primitive: plane; width: 3; height: 0.6"
                     material="color: #000000; opacity: 0.9; transparent: true"
-                    class="title-text">
+                    class="title-text"
+                    visible="false">
             </a-text>
-        </a-entity>
-
+        </a-marker>
         <a-entity camera look-controls="enabled: false"></a-entity>
     </a-scene>
 

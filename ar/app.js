@@ -2,12 +2,12 @@
     'use strict';
 
     const CONFIG = {
-        spacing: 2.2,
-        blockSize: 0.8,
-        textOffset: 1.5,
+        spacing: 1.5,
+        blockSize: 0.4,
+        textOffset: 0.8,
         baseHeight: 0.5,
-        textScale: 0.8,
-        line: { color: '#FFF', height: 0.1, depth: 0.1 }
+        textScale: 0.4,
+        line: { color: '#FFF', height: 0.05, depth: 0.05 }
     };
 
     const TIMELINE_DATA = [
@@ -205,14 +205,29 @@
         elements.marker.addEventListener('markerFound', () => {
             updateStatus('marker', i18n.translations[i18n.currentLang].markerFound);
             elements.marker.setAttribute('visible', 'true');
+            
+            // Show all elements
             elements.container.setAttribute('visible', true);
-            elements.container.setAttribute('interactive', 'true');
+            document.querySelectorAll('.title-text').forEach(el => {
+                el.setAttribute('visible', true);
+            });
+            document.querySelectorAll('.timeline-block').forEach(el => {
+                el.setAttribute('visible', true);
+            });
         });
 
         elements.marker.addEventListener('markerLost', () => {
             updateStatus('marker', i18n.translations[i18n.currentLang].markerSearch);
             elements.marker.setAttribute('visible', 'false');
+            
+            // Hide all elements
             elements.container.setAttribute('visible', false);
+            document.querySelectorAll('.title-text').forEach(el => {
+                el.setAttribute('visible', false);
+            });
+            document.querySelectorAll('.timeline-block').forEach(el => {
+                el.setAttribute('visible', false);
+            });
         });
     }
 

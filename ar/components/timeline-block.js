@@ -11,12 +11,12 @@ AFRAME.registerComponent('timeline-block', {
     },
 
     init: function() {
-        // Set initial properties
+        // Set initial properties with smaller size
         this.el.setAttribute('geometry', {
             primitive: 'box',
-            width: 0.8,
-            height: 0.8,
-            depth: 0.8
+            width: 0.4,  // Reduced from 0.8
+            height: 0.4, // Reduced from 0.8
+            depth: 0.4   // Reduced from 0.8
         });
 
         this.el.setAttribute('material', {
