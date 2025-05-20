@@ -401,6 +401,12 @@
                 
             elements.marker.setAttribute('visible', 'true');
             
+            // Clear any existing progress badge that might be showing incorrectly
+            const existingBadge = document.querySelector('.progress-badge');
+            if (existingBadge) {
+                existingBadge.style.display = 'none';
+            }
+            
             // Show all elements with a slight delay for stability
             setTimeout(() => {
                 elements.container.setAttribute('visible', true);
@@ -410,7 +416,10 @@
                 document.querySelectorAll('.timeline-block').forEach(el => {
                     el.setAttribute('visible', true);
                 });
-            }, 100);
+                
+                // Trigger a progress-update event after elements are visible
+                document.dispatchEvent(new CustomEvent('progressUpdate'));
+            }, 500);
             
             // Track marker found event
             if (window.Analytics) {

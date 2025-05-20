@@ -213,6 +213,9 @@ body {
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     transition: all 0.3s ease;
+    max-width: 200px;
+    text-align: center;
+    pointer-events: none; /* Let clicks pass through */
 }
 
 .progress-badge.top-right {
@@ -241,21 +244,25 @@ body {
     margin-top: 8px;
     border-radius: 2px;
     transition: width 0.3s ease-out;
+    width: 0%; /* Start at 0% width */
 }
 
 .progress-text {
     margin-bottom: 5px;
     font-weight: 500;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .progress-badge.complete {
     background: rgba(46, 204, 113, 0.8);
-    animation: completeAnimation 1s ease-in-out;
+    animation: completeAnimation 0.8s ease-in-out;
+    max-width: 200px; /* Ensure it doesn't expand too much */
 }
 
 @keyframes completeAnimation {
     0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+    50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
 

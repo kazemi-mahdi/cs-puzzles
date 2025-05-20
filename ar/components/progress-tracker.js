@@ -84,8 +84,19 @@ AFRAME.registerComponent('progress-tracker', {
     
     showProgressBadge: function() {
         if (this.badge && !this.isBadgeVisible) {
-            this.badge.style.display = 'block';
-            this.isBadgeVisible = true;
+            // Make sure we have text content before showing
+            if (this.progressText && !this.progressText.textContent) {
+                this.updateProgress(); // Force a UI update
+            }
+            
+            // Only show if we have content
+            if (this.progressText && this.progressText.textContent) {
+                this.badge.style.display = 'block';
+                this.isBadgeVisible = true;
+                console.log('Progress badge shown with text:', this.progressText.textContent);
+            } else {
+                console.warn('Not showing progress badge because it has no text content');
+            }
         }
     },
     
@@ -199,31 +210,35 @@ AFRAME.registerComponent('progress-tracker', {
         // First update the data
         this.updateProgressData();
         
-        // Only update UI if badge is visible
-        if (!this.isBadgeVisible) return;
+        // Prepare text content regardless of visibility
+        const progressMessage = this.isComplete
+            ? '🎉 Timeline Complete!'
+            : `Progress: ${Math.round(this.progress)}% (${this.visitedCount}/${this.data.totalEvents})`;
+
+        // Always update the text content
+        if (this.progressText) {
+            this.progressText.textContent = progressMessage;
+            console.log('Updated progress text to:', progressMessage);
+        } else {
+            console.warn('Progress text element not found');
+        }
         
-        // Update progress bar if it exists
+        // Update progress bar
         if (this.progressBar) {
             this.progressBar.style.width = `${this.progress}%`;
         }
-        
-        // Update text display
-        if (this.progressText) {
-            const progressMessage = this.isComplete
-                ? (window.I18n ? I18n.t('ui.complete') : '🎉 Timeline Complete!')
-                : (window.I18n 
-                   ? I18n.t('ui.progress') + `: ${Math.round(this.progress)}% (${this.visitedCount}/${this.data.totalEvents})` 
-                   : `Progress: ${Math.round(this.progress)}% (${this.visitedCount}/${this.data.totalEvents})`);
-                   
-            this.progressText.textContent = progressMessage;
-        }
 
-        // Add special class for completion
+        // Update completion status
         if (this.badge) {
             if (this.isComplete) {
                 this.badge.classList.add('complete');
             } else {
                 this.badge.classList.remove('complete');
+            }
+            
+            // Ensure the badge is visible if it should be
+            if (this.isBadgeVisible && this.badge.style.display !== 'block') {
+                this.badge.style.display = 'block';
             }
         }
     },
