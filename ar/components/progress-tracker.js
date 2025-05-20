@@ -9,6 +9,8 @@ AFRAME.registerComponent('progress-tracker', {
     init: function() {
         this.updateProgress = this.updateProgress.bind(this);
         this.markVisited = this.markVisited.bind(this);
+        this.onMarkerFound = this.onMarkerFound.bind(this);
+        this.onMarkerLost = this.onMarkerLost.bind(this);
         
         // Create event listeners
         document.addEventListener('progressUpdate', this.updateProgress);
@@ -18,15 +20,36 @@ AFRAME.registerComponent('progress-tracker', {
             }
         });
         
-        // Set up the progress visualization
+        // Listen for marker found/lost events
+        const marker = document.querySelector('#marker');
+        if (marker) {
+            marker.addEventListener('markerFound', this.onMarkerFound);
+            marker.addEventListener('markerLost', this.onMarkerLost);
+        }
+        
+        // Set up the progress visualization but don't show it yet
         if (this.data.showBadge) {
             this.createProgressBadge();
         }
         
-        // Initial progress check
-        this.updateProgress();
+        // Prepare data, but don't show UI yet
+        this.isBadgeVisible = false;
+        this.updateProgressData();
     },
 
+    onMarkerFound: function() {
+        // Show the progress badge when marker is found
+        console.log('Marker found, showing progress badge');
+        this.showProgressBadge();
+        this.updateProgress(); // Show the visual progress
+    },
+    
+    onMarkerLost: function() {
+        // Hide the progress badge when marker is lost
+        console.log('Marker lost, hiding progress badge');
+        this.hideProgressBadge();
+    },
+    
     createProgressBadge: function() {
         // Create or get the progress badge
         let badge = document.querySelector('.progress-badge');
@@ -34,6 +57,8 @@ AFRAME.registerComponent('progress-tracker', {
             badge = document.createElement('div');
             badge.className = 'progress-badge';
             badge.classList.add(this.data.badgePosition);
+            // Initially hidden
+            badge.style.display = 'none';
             
             // Create progress bar within badge
             const progressBar = document.createElement('div');
@@ -48,6 +73,26 @@ AFRAME.registerComponent('progress-tracker', {
             document.body.appendChild(badge);
             this.progressBar = progressBar;
             this.progressText = progressText;
+            this.badge = badge;
+        } else {
+            this.badge = badge;
+            this.progressBar = badge.querySelector('.progress-bar');
+            this.progressText = badge.querySelector('.progress-text');
+            this.badge.style.display = 'none';
+        }
+    },
+    
+    showProgressBadge: function() {
+        if (this.badge && !this.isBadgeVisible) {
+            this.badge.style.display = 'block';
+            this.isBadgeVisible = true;
+        }
+    },
+    
+    hideProgressBadge: function() {
+        if (this.badge && this.isBadgeVisible) {
+            this.badge.style.display = 'none';
+            this.isBadgeVisible = false;
         }
     },
 
@@ -112,48 +157,25 @@ AFRAME.registerComponent('progress-tracker', {
         }
     },
 
-    updateProgress: function() {
+    // Update data without updating UI
+    updateProgressData: function() {
         const visited = this.getVisitedEvents();
         const totalEvents = this.data.totalEvents;
-        const progress = totalEvents > 0 ? (visited.length / totalEvents) * 100 : 0;
+        this.progress = totalEvents > 0 ? (visited.length / totalEvents) * 100 : 0;
+        this.visitedCount = visited.length;
+        this.isComplete = visited.length === totalEvents;
         
-        // Update progress bar if it exists
-        if (this.progressBar) {
-            this.progressBar.style.width = `${progress}%`;
-        }
-        
-        // Update text display
-        if (this.progressText) {
-            const progressMessage = visited.length === totalEvents
-                ? (window.I18n ? I18n.t('ui.complete') : '🎉 Timeline Complete!')
-                : (window.I18n 
-                   ? I18n.t('ui.progress') + `: ${Math.round(progress)}% (${visited.length}/${totalEvents})` 
-                   : `Progress: ${Math.round(progress)}% (${visited.length}/${totalEvents})`);
-                   
-            this.progressText.textContent = progressMessage;
-        }
-
-        // Add special class for completion
-        const badge = document.querySelector('.progress-badge');
-        if (badge) {
-            if (visited.length === totalEvents) {
-                badge.classList.add('complete');
-            } else {
-                badge.classList.remove('complete');
-            }
-        }
-
-        // Track progress in analytics
+        // Track progress in analytics without visual updates
         if (window.Analytics) {
-            window.Analytics.trackProgress(progress, visited.length, totalEvents);
+            window.Analytics.trackProgress(this.progress, visited.length, totalEvents);
         } else if (window.gtag) {
             gtag('event', 'progressUpdate', {
                 'event_category': 'Progress',
-                'event_label': `Progress: ${progress}%`
+                'event_label': `Progress: ${this.progress}%`
             });
             
             // Track completion
-            if (visited.length === totalEvents) {
+            if (this.isComplete) {
                 gtag('event', 'timelineComplete', {
                     'event_category': 'Progress',
                     'event_label': 'Timeline Completion'
@@ -164,12 +186,46 @@ AFRAME.registerComponent('progress-tracker', {
         // Dispatch a progress event for other components
         document.dispatchEvent(new CustomEvent('progressUpdated', {
             detail: {
-                progress,
+                progress: this.progress,
                 visited: visited.length,
                 total: totalEvents,
-                isComplete: visited.length === totalEvents
+                isComplete: this.isComplete
             }
         }));
+    },
+    
+    // Update both data and UI
+    updateProgress: function() {
+        // First update the data
+        this.updateProgressData();
+        
+        // Only update UI if badge is visible
+        if (!this.isBadgeVisible) return;
+        
+        // Update progress bar if it exists
+        if (this.progressBar) {
+            this.progressBar.style.width = `${this.progress}%`;
+        }
+        
+        // Update text display
+        if (this.progressText) {
+            const progressMessage = this.isComplete
+                ? (window.I18n ? I18n.t('ui.complete') : '🎉 Timeline Complete!')
+                : (window.I18n 
+                   ? I18n.t('ui.progress') + `: ${Math.round(this.progress)}% (${this.visitedCount}/${this.data.totalEvents})` 
+                   : `Progress: ${Math.round(this.progress)}% (${this.visitedCount}/${this.data.totalEvents})`);
+                   
+            this.progressText.textContent = progressMessage;
+        }
+
+        // Add special class for completion
+        if (this.badge) {
+            if (this.isComplete) {
+                this.badge.classList.add('complete');
+            } else {
+                this.badge.classList.remove('complete');
+            }
+        }
     },
 
     resetProgress: function() {
@@ -194,7 +250,20 @@ AFRAME.registerComponent('progress-tracker', {
     },
 
     remove: function() {
+        // Remove document event listeners
         document.removeEventListener('progressUpdate', this.updateProgress);
         document.removeEventListener('eventVisited', this.markVisited);
+        
+        // Remove marker event listeners
+        const marker = document.querySelector('#marker');
+        if (marker) {
+            marker.removeEventListener('markerFound', this.onMarkerFound);
+            marker.removeEventListener('markerLost', this.onMarkerLost);
+        }
+        
+        // Remove badge from DOM if created by this component
+        if (this.badge && this.badge.parentNode) {
+            this.badge.parentNode.removeChild(this.badge);
+        }
     }
 });
