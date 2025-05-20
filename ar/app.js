@@ -202,31 +202,27 @@
     function setupMarkerHandlers() {
         if (!elements.marker) return;
 
-        // Add raycaster to scene for click detection
-        elements.scene.setAttribute('raycaster', {
-            objects: '.clickable',
-            enabled: true
-        });
-
         elements.marker.addEventListener('markerFound', () => {
             updateStatus('marker', i18n.translations[i18n.currentLang].markerFound);
             elements.marker.setAttribute('visible', 'true');
             
-            // Show all elements
-            elements.container.setAttribute('visible', true);
-            document.querySelectorAll('.title-text').forEach(el => {
-                el.setAttribute('visible', true);
-            });
-            document.querySelectorAll('.timeline-block').forEach(el => {
-                el.setAttribute('visible', true);
-            });
+            // Show all elements with a slight delay for stability
+            setTimeout(() => {
+                elements.container.setAttribute('visible', true);
+                document.querySelectorAll('.title-text').forEach(el => {
+                    el.setAttribute('visible', true);
+                });
+                document.querySelectorAll('.timeline-block').forEach(el => {
+                    el.setAttribute('visible', true);
+                });
+            }, 100);
         });
 
         elements.marker.addEventListener('markerLost', () => {
             updateStatus('marker', i18n.translations[i18n.currentLang].markerSearch);
             elements.marker.setAttribute('visible', 'false');
             
-            // Hide all elements
+            // Hide all elements immediately
             elements.container.setAttribute('visible', false);
             document.querySelectorAll('.title-text').forEach(el => {
                 el.setAttribute('visible', false);
@@ -239,13 +235,28 @@
 
     function setupPerformance() {
         if (/Mobi|Android/i.test(navigator.userAgent)) {
-            elements.scene.setAttribute('renderer', 'antialias: false; precision: low');
+            elements.scene.setAttribute('renderer', {
+                antialias: false,
+                precision: 'low',
+                logarithmicDepthBuffer: false,
+                maxCanvasWidth: 640,
+                maxCanvasHeight: 480
+            });
         }
 
         // Add cursor component for better interaction
         elements.scene.setAttribute('cursor', {
             rayOrigin: 'mouse',
-            fuse: false
+            fuse: false,
+            objects: '.clickable'
+        });
+
+        // Add raycaster for better interaction
+        elements.scene.setAttribute('raycaster', {
+            objects: '.clickable',
+            enabled: true,
+            far: 1000,
+            near: 0.1
         });
     }
 

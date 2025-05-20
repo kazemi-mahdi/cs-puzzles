@@ -11,7 +11,7 @@ AFRAME.registerComponent('timeline-block', {
     },
 
     init: function() {
-        // Set initial properties with original size
+        // Set initial properties
         this.el.setAttribute('geometry', {
             primitive: 'box',
             width: 0.8,
@@ -28,10 +28,18 @@ AFRAME.registerComponent('timeline-block', {
         // Add class for clickability
         this.el.setAttribute('class', 'timeline-block clickable');
 
+        // Add static-body for stability with proper configuration
+        this.el.setAttribute('static-body', {
+            type: 'static',
+            mass: 0,
+            linearDamping: 0.9,
+            angularDamping: 0.9
+        });
+
         // Initially hide the element
         this.el.setAttribute('visible', false);
 
-        // Set initial position
+        // Set initial position with proper formatting
         const position = this.data.position.split(' ').map(Number);
         this.el.setAttribute('position', {
             x: position[0],
