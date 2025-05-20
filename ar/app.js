@@ -269,7 +269,12 @@
 
     // Build the timeline with event blocks
     function buildTimeline() {
-        if (!elements.container) return;
+        if (!elements.container) {
+            console.error('Timeline container not found!');
+            return;
+        }
+
+        console.log('Building timeline with container:', elements.container);
 
         // Sort events chronologically
         TIMELINE_DATA.sort((a, b) => parseInt(a.year) - parseInt(b.year));
@@ -279,37 +284,40 @@
             elements.container.removeChild(elements.container.firstChild);
         }
         
-        // Add progress tracker with improved options
-        elements.container.setAttribute('progress-tracker', {
-            totalEvents: TIMELINE_DATA.length,
-            storageKey: 'cs-timeline-visited',
-            showBadge: true,
-            badgePosition: 'top-right'
-        });
+        // Disable progress tracker temporarily until we fix the display issues
+        // elements.container.setAttribute('progress-tracker', {
+        //     totalEvents: TIMELINE_DATA.length,
+        //     storageKey: 'cs-timeline-visited',
+        //     showBadge: true,
+        //     badgePosition: 'top-right'
+        // });
         
-        // Create blocks for each event
+        // Ensure container is visible
+        elements.container.setAttribute('visible', true);
+        
+        // Create a title text directly in the scene to confirm AR is working
+        const titleText = document.createElement('a-text');
+        titleText.setAttribute('value', 'Computer Science Timeline');
+        titleText.setAttribute('color', '#FFFFFF');
+        titleText.setAttribute('align', 'center');
+        titleText.setAttribute('position', '0 1.5 0');
+        titleText.setAttribute('scale', '1 1 1');
+        titleText.setAttribute('visible', true);
+        elements.container.appendChild(titleText);
+        
+        // Create simple cube blocks for testing
         TIMELINE_DATA.forEach((event, index) => {
             const position = calculatePosition(index);
-            createBlock(event, position, index);
+            createSimpleBlock(event, position, index);
             
             // Create connector (except for the first block)
-            if (index > 0) {
-                createConnector(index, position);
+            if (index > 0 && index < TIMELINE_DATA.length) {
+                createSimpleConnector(index, position);
             }
         });
         
         // Log timeline creation
         console.log(`Timeline built with ${TIMELINE_DATA.length} events`);
-        
-        // Track event in analytics
-        if (window.Analytics) {
-            Analytics.trackEvent(
-                Analytics.categories.NAVIGATION, 
-                'timelineBuilt', 
-                'Timeline Construction', 
-                TIMELINE_DATA.length
-            );
-        }
     }
 
     // Calculate position for each timeline block
@@ -390,45 +398,121 @@
         elements.container.appendChild(connector);
     }
 
+    // Create a simple block for testing (primitive cube)
+    function createSimpleBlock(event, position, index) {
+        // Create primitive box for testing
+        const cube = document.createElement('a-box');
+        cube.className = 'timeline-block';
+        
+        // Convert color string to hex if needed
+        let color = event.color || getColorForIndex(index);
+        
+        // Set attributes
+        cube.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+        cube.setAttribute('width', '0.4');
+        cube.setAttribute('height', '0.4');
+        cube.setAttribute('depth', '0.4');
+        cube.setAttribute('color', color);
+        cube.setAttribute('visible', true);
+        
+        // Add text for year
+        const yearText = document.createElement('a-text');
+        yearText.setAttribute('value', event.year);
+        yearText.setAttribute('position', '0 0.3 0');
+        yearText.setAttribute('align', 'center');
+        yearText.setAttribute('color', '#FFFFFF');
+        yearText.setAttribute('scale', '0.5 0.5 0.5');
+        cube.appendChild(yearText);
+        
+        // Animation for testing
+        const animation = document.createElement('a-animation');
+        animation.setAttribute('attribute', 'rotation');
+        animation.setAttribute('dur', '4000');
+        animation.setAttribute('to', '0 360 0');
+        animation.setAttribute('repeat', 'indefinite');
+        animation.setAttribute('easing', 'linear');
+        cube.appendChild(animation);
+        
+        // Add to container
+        elements.container.appendChild(cube);
+        console.log(`Created simple block for ${event.title} at position:`, position);
+        
+        return cube;
+    }
+    
+    // Create a simple connector (line) between blocks
+    function createSimpleConnector(index, currentPosition) {
+        if (index <= 0 || !TIMELINE_DATA[index-1]) return;
+        
+        // Get previous position
+        const prevPosition = calculatePosition(index-1);
+        
+        // Create line entity
+        const line = document.createElement('a-entity');
+        line.setAttribute('line', {
+            start: `${prevPosition.x} ${prevPosition.y} ${prevPosition.z}`,
+            end: `${currentPosition.x} ${currentPosition.y} ${currentPosition.z}`,
+            color: '#FFFFFF',
+            opacity: 0.7
+        });
+        
+        elements.container.appendChild(line);
+        return line;
+    }
+    
+    // Helper function to get a color for index
+    function getColorForIndex(index) {
+        const colors = ['#4285F4', '#EA4335', '#FBBC05', '#34A853', '#FF6D01', '#46BDC6'];
+        return colors[index % colors.length];
+    }
+
     // Set up marker detection handlers
     function setupMarkerHandlers() {
         if (!elements.marker) return;
 
         elements.marker.addEventListener('markerFound', () => {
-            updateStatus('marker', window.I18n 
-                ? I18n.t('ui.markerFound') 
-                : i18n.translations[i18n.currentLang].markerFound);
+            console.log('MARKER FOUND EVENT TRIGGERED');
+            updateStatus('marker', 'Marker detected');
                 
             elements.marker.setAttribute('visible', 'true');
             
-            // Clear any existing progress badge that might be showing incorrectly
-            const existingBadge = document.querySelector('.progress-badge');
-            if (existingBadge) {
-                existingBadge.style.display = 'none';
-            }
+            // Remove any green progress badges
+            const badges = document.querySelectorAll('.progress-badge');
+            badges.forEach(badge => {
+                badge.remove();
+            });
             
-            // Show all elements with a slight delay for stability
+            // Force rebuild the timeline
+            buildTimeline();
+            
+            // Show all elements immediately
+            elements.container.setAttribute('visible', true);
+            
+            // Make sure all blocks are visible
             setTimeout(() => {
-                elements.container.setAttribute('visible', true);
-                document.querySelectorAll('.title-text').forEach(el => {
+                console.log('Setting blocks visible');
+                document.querySelectorAll('a-box.timeline-block').forEach(el => {
                     el.setAttribute('visible', true);
-                });
-                document.querySelectorAll('.timeline-block').forEach(el => {
-                    el.setAttribute('visible', true);
+                    // Add a pulse animation to make blocks more noticeable
+                    el.setAttribute('animation__pulse', {
+                        property: 'scale',
+                        from: '1 1 1',
+                        to: '1.2 1.2 1.2',
+                        dur: 1000,
+                        dir: 'alternate',
+                        loop: 2
+                    });
                 });
                 
-                // Trigger a progress-update event after elements are visible
-                document.dispatchEvent(new CustomEvent('progressUpdate'));
-            }, 500);
-            
-            // Track marker found event
-            if (window.Analytics) {
-                Analytics.trackEvent(
-                    Analytics.categories.INTERACTION,
-                    'markerFound',
-                    'Marker Detection'
-                );
-            }
+                // Create a floating text above the marker to confirm it's working
+                const confirmText = document.createElement('a-text');
+                confirmText.setAttribute('value', 'Timeline Active');
+                confirmText.setAttribute('position', '0 2 0');
+                confirmText.setAttribute('color', 'white');
+                confirmText.setAttribute('align', 'center');
+                confirmText.setAttribute('scale', '1 1 1');
+                elements.scene.appendChild(confirmText);
+            }, 1000);            
         });
 
         elements.marker.addEventListener('markerLost', () => {

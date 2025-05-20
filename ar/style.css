@@ -254,10 +254,16 @@ body {
     word-wrap: break-word;
 }
 
+/* Temporarily disable completion badge until timeline works properly */
+.progress-badge {
+    display: none !important;
+}
+
 .progress-badge.complete {
-    background: rgba(46, 204, 113, 0.8);
-    animation: completeAnimation 0.8s ease-in-out;
-    max-width: 200px; /* Ensure it doesn't expand too much */
+    background: rgba(0, 0, 0, 0.7) !important; /* Change to dark background */
+    animation: none !important; /* Disable animation */
+    max-width: 200px;
+    opacity: 0.8 !important;
 }
 
 @keyframes completeAnimation {
