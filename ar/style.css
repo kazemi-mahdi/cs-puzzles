@@ -228,3 +228,20 @@ a-marker > a-entity {
     from { transform: translate(-50%, 100%); opacity: 0; }
     to { transform: translate(-50%, 0); opacity: 1; }
 }
+
+/* Title Text */
+.title-text {
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: normal;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-weight: bold;
+    will-change: transform;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
+.title-text a-plane {
+    pointer-events: none;
+}
