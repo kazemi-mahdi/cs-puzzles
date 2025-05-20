@@ -247,10 +247,9 @@ AFRAME.registerComponent('timeline-block', {
         });
         
         this.textEntity.setAttribute('rotation', '-90 0 0');
-        this.textEntity.setAttribute('opacity', 0); // Start transparent
-        this.textEntity.setAttribute('visible', false);
+        this.textEntity.setAttribute('visible', false); // Start hidden
         
-        // Add to parent
+        // Add to the scene
         this.el.appendChild(this.textEntity);
     },
 

@@ -41,7 +41,7 @@
         vr-mode-ui="enabled: false"
         arjs="sourceType: webcam; 
               debugUIEnabled: false; 
-              detectionMode: mono; 
+              detectionMode: mono_and_matrix; 
               trackingMethod: best;
               smoothCount: 20;
               smoothTolerance: 0.005;
@@ -54,9 +54,7 @@
               displayWidth: 640;
               displayHeight: 480;
               areaLearningButton: false;
-              minConfidence: 0.6;
-              maxDetectionRate: 60;
-              detectionMode: mono_and_matrix;"
+              minConfidence: 0.6;"
     >
         <a-marker preset="hiro" 
                   id="marker" 
