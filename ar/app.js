@@ -7,12 +7,13 @@
         textOffset: 1.5,
         baseHeight: 0.5,
         textScale: 0.8,
-        stabilization: 0.95,
+        stabilization: 0.98,
         line: { color: '#FFF', height: 0.1, depth: 0.1 },
         physics: {
             gravity: 0,
-            maxInterval: 1/60,
-            iterations: 20
+            maxInterval: 1/30,
+            iterations: 10,
+            damping: 0.99
         }
     };
 
@@ -222,22 +223,22 @@
             z: lastPosition.z * CONFIG.stabilization + currentPos.z * (1 - CONFIG.stabilization)
         };
 
-        // Only update if the change is significant
-        if (Math.abs(smoothedPos.x - lastPosition.x) > 0.001 ||
-            Math.abs(smoothedPos.y - lastPosition.y) > 0.001 ||
-            Math.abs(smoothedPos.z - lastPosition.z) > 0.001) {
+        // Only update if the change is significant (increased threshold)
+        if (Math.abs(smoothedPos.x - lastPosition.x) > 0.005 ||
+            Math.abs(smoothedPos.y - lastPosition.y) > 0.005 ||
+            Math.abs(smoothedPos.z - lastPosition.z) > 0.005) {
             
             elements.container.setAttribute('position', smoothedPos);
             lastPosition = smoothedPos;
         }
 
-        // Use requestAnimationFrame with a timeout to prevent excessive updates
+        // Use requestAnimationFrame with a longer timeout for less frequent updates
         if (stabilizationTimeout) {
             clearTimeout(stabilizationTimeout);
         }
         stabilizationTimeout = setTimeout(() => {
             requestAnimationFrame(stabilizeElements);
-        }, 16); // Approximately 60fps
+        }, 32); // Reduced from 60fps to 30fps for more stability
     }
 
     function setupMarkerHandlers() {
@@ -261,12 +262,13 @@
             elements.scene.setAttribute('renderer', 'antialias: false; precision: low');
         }
         
-        // Add physics system
+        // Add physics system with more stable settings
         elements.scene.setAttribute('physics', {
             driver: 'local',
             gravity: 0,
-            maxInterval: 1/60,
-            iterations: 20
+            maxInterval: 1/30,
+            iterations: 10,
+            damping: 0.99
         });
     }
 
