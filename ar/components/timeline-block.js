@@ -110,8 +110,10 @@ AFRAME.registerComponent('timeline-block', {
             // Make visible immediately
             this.el.setAttribute('visible', true);
             
+            // Make text visible immediately
             if (this.textEntity) {
                 this.textEntity.setAttribute('visible', true);
+                this.textEntity.setAttribute('material', 'opacity', 1);
             }
             
             // Add entrance animation if enabled
@@ -138,6 +140,7 @@ AFRAME.registerComponent('timeline-block', {
         
         if (this.textEntity) {
             this.textEntity.setAttribute('visible', false);
+            this.textEntity.setAttribute('material', 'opacity', 0);
         }
         
         // Stop any running animations
@@ -225,7 +228,8 @@ AFRAME.registerComponent('timeline-block', {
         backgroundPlane.setAttribute('material', {
             transparent: true,
             shader: 'flat',
-            side: 'double'
+            side: 'double',
+            opacity: 0.6
         });
         this.textEntity.appendChild(backgroundPlane);
         
@@ -237,6 +241,10 @@ AFRAME.registerComponent('timeline-block', {
         this.textElement.setAttribute('color', '#FFFFFF');
         this.textElement.setAttribute('position', '0 0 0.02');
         this.textElement.setAttribute('font', 'roboto');
+        this.textElement.setAttribute('material', {
+            transparent: true,
+            opacity: 1
+        });
         this.textEntity.appendChild(this.textElement);
         
         // Position above the block
