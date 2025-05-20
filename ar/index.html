@@ -35,41 +35,58 @@
         <button data-lang="es">ES</button>
     </div>
 
-    <!-- AR Scene -->
+    <!-- AR Scene with improved configuration -->
     <a-scene 
         embedded
         vr-mode-ui="enabled: false"
+        renderer="logarithmicDepthBuffer: true; precision: mediump; antialias: true"
         arjs="sourceType: webcam; 
-              debugUIEnabled: false; 
+              debugUIEnabled: true; 
               detectionMode: mono_and_matrix; 
+              matrixCodeType: 3x3;
               trackingMethod: best;
-              smoothCount: 20;
-              smoothTolerance: 0.005;
-              smoothThreshold: 10;
-              maxDetectionRate: 60;
-              canvasWidth: 640;
-              canvasHeight: 480;
-              sourceWidth: 640;
-              sourceHeight: 480;
-              displayWidth: 640;
-              displayHeight: 480;
+              smoothCount: 5;
+              smoothTolerance: 0.01;
+              smoothThreshold: 2;
+              maxDetectionRate: 30;
+              canvasWidth: 1280;
+              canvasHeight: 960;
+              displayWidth: window.innerWidth;
+              displayHeight: window.innerHeight;
               areaLearningButton: false;
-              minConfidence: 0.6;"
+              minConfidence: 0.3;"
     >
+        <!-- Main AR Marker with improved settings -->
         <a-marker preset="hiro" 
                   id="marker" 
                   emitevents="true"
                   smooth="true"
-                  smoothCount="20"
-                  smoothTolerance="0.005"
-                  smoothThreshold="10"
+                  smoothCount="5"
+                  smoothTolerance="0.01"
+                  smoothThreshold="2"
                   raycaster="objects: .clickable"
-                  cursor="fuse: false"
-                  static-body="type: static; mass: 0; linearDamping: 0.9; angularDamping: 0.9">
-            <a-entity id="timeline-container" 
-                     position="0 0.5 0"
-                     visible="true"
-                     static-body="type: static; mass: 0; linearDamping: 0.9; angularDamping: 0.9">
+                  cursor="fuse: false">
+                  
+            <!-- Debug cube that should appear immediately when marker is detected -->
+            <a-box position="0 0.5 0" 
+                   color="red" 
+                   scale="0.4 0.4 0.4"
+                   animation="property: rotation; to: 0 360 0; loop: true; dur: 2000; easing: linear">
+            </a-box>
+            
+            <!-- Debug text that should appear when marker is detected -->
+            <a-text value="MARKER DETECTED!" 
+                    position="0 1.2 0" 
+                    align="center" 
+                    color="yellow" 
+                    scale="1 1 1">
+            </a-text>
+            <!-- Simplified timeline container with test elements -->
+            <a-entity id="timeline-container" position="0 0 0" visible="true">
+                <!-- Simple timeline with primitive shapes for testing -->
+                <a-sphere position="-1 0 0" radius="0.2" color="blue"></a-sphere>
+                <a-box position="0 0 0" scale="0.3 0.3 0.3" color="green"></a-box>
+                <a-cylinder position="1 0 0" radius="0.2" height="0.4" color="purple"></a-cylinder>
             </a-entity>
             <a-text value="Computer Science Timeline"
                     position="0 1.2 -1"

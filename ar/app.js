@@ -157,64 +157,72 @@
                 const assetManifest = createAssetManifest();
                 AssetLoader.setCallbacks({
                     onProgress: (progress) => {
-                        updateLoader(30 + (progress.progress * 0.6), // Scale between 30-90%
-                            window.I18n ? I18n.t('ui.loading') : i18n.translations[i18n.currentLang].loading);
                     },
-                    onComplete: () => {
-                        updateLoader(90, window.I18n ? I18n.t('ui.cameraAccess') : i18n.translations[i18n.currentLang].cameraAccess);
-                    },
-                    onError: (errors) => {
-                        console.warn('Asset loading errors:', errors);
-                    }
-                });
-                await AssetLoader.preloadAssets(assetManifest);
+                    onComplete: () => {},
+                    onError: () => {}
+                })
             }
-
-            // Request camera access
-            updateLoader(30, window.I18n ? I18n.t('ui.cameraAccess') : i18n.translations[i18n.currentLang].cameraAccess);
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { 
-                    facingMode: 'environment',
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }
-            });
-
-            // Set up AR scene
+            
+            // Check for AR.js
+            if (typeof AFRAME === 'undefined') {
+                throw new Error('A-Frame not loaded');
+            }
+            
+            debugLog('A-Frame loaded: ' + AFRAME.version);
+            
+            // Update status
+            updateStatus('browser', 'AR enabled browser detected');
+            
+            // Check browser compatibility
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Browser does not support camera access for AR');
+            }
+            
+            debugLog('Camera API available');
+            updateStatus('camera', 'Requesting camera access...');
+            
+            // Initialize app components
+            debugLog('Setting up AR scene...');
             setupARScene();
-
-            // Load components
+            
+            // Initialize other components
             setupMarkerHandlers();
-            setupPerformance();
-            setupLanguageSwitcher();
             
-            // Initialize analytics
-            if (window.Analytics) {
-                Analytics.init();
-            } else {
-                initializeAnalytics();
-            }
-
-            // Build the timeline
+            // Check for markers in the DOM
+            const markers = document.querySelectorAll('a-marker');
+            debugLog(`Found ${markers.length} markers in DOM`);
+            markers.forEach((marker, i) => {
+                const type = marker.getAttribute('type') || marker.getAttribute('preset') || 'unknown';
+                const id = marker.id || `marker-${i}`;
+                debugLog(`Marker ${i+1}: ${id}, Type: ${type}`);
+            });
+            
+            // Build basic timeline elements for testing
             buildTimeline();
-
-            // All done - hide the loader
-            updateLoader(100, '');
-            elements.loader.classList.add('hidden');
-            setTimeout(() => {
-                elements.loader.style.display = 'none';
-            }, 500);
-
-        } catch (error) {
-            const errorMessage = window.I18n 
-                ? `${I18n.t('errors.arError')}${error.message}` 
-                : `${i18n.translations[i18n.currentLang].error}${error.message}`;
-                
-            showFallback(errorMessage);
             
-            if (window.Analytics) {
-                Analytics.trackError('initialization', error.message);
+            // Hide loader
+            if (elements.loader) {
+                elements.loader.classList.add('hidden');
             }
+            
+            // Simplify the UI - remove unnecessary elements
+            const simplifyUI = () => {
+                // Remove any complex UI elements that might interfere with basic AR testing
+                document.querySelectorAll('.progress-badge, .modal').forEach(el => el.remove());
+            };
+            
+            setTimeout(simplifyUI, 1000);
+            
+            debugLog('AR initialization complete - waiting for marker detection');
+            updateStatus('marker', 'Searching for marker...');
+            
+        } catch (err) {
+            console.error('Failed to initialize AR:', err);
+            if (document.getElementById('ar-debug')) {
+                document.getElementById('ar-debug').innerHTML += 
+                    `<div style="color:red">ERROR: ${err.message}</div>`;
+            }
+            showFallback(err.message);
         }
     }
     
@@ -243,28 +251,68 @@
     
     // Set up the AR scene with optimal settings
     function setupARScene() {
-        // Add cursor component for interaction
-        elements.scene.setAttribute('cursor', {
-            rayOrigin: 'mouse',
-            fuse: false
-        });
+        console.log('Setting up AR scene...');
         
-        // Add raycaster for interaction
-        elements.scene.setAttribute('raycaster', {
-            objects: '.clickable',
-            far: 50
-        });
+        // Create a scene
+        elements.scene = document.querySelector('a-scene');
         
-        // Add marker-stabilizer component to marker
-        if (elements.marker) {
-            elements.marker.setAttribute('marker-stabilizer', {
-                smooth: true,
-                smoothCount: 10,
-                smoothTolerance: 0.01,
-                smoothThreshold: 5,
-                skipFrames: isMobile() ? 2 : 1
-            });
+        if (!elements.scene) {
+            console.error('A-Frame scene not found');
+            return;
         }
+        
+        // Set performance settings
+        const performanceSettings = isMobile() 
+            ? CONFIG.performance.mobile 
+            : CONFIG.performance.desktop;
+        
+        // Apply settings to scene attributes
+        Object.entries(performanceSettings).forEach(([key, value]) => {
+            elements.scene.setAttribute(key, value);
+        });
+        
+        // Set up marker
+        elements.marker = document.querySelector('a-marker');
+        
+        if (!elements.marker) {
+            console.error('AR marker not found');
+            return;
+        }
+        
+        console.log('Marker found in DOM:', elements.marker.id || 'unnamed-marker');
+        
+        // Remove any existing containers
+        const existingContainer = document.getElementById('timeline-container');
+        if (existingContainer) {
+            existingContainer.parentNode.removeChild(existingContainer);
+            console.log('Removed existing timeline container');
+        }
+        
+        // Add a container for our timeline blocks
+        elements.container = document.createElement('a-entity');
+        elements.container.id = 'timeline-container';
+        elements.container.setAttribute('position', '0 0.5 0'); // Position above the marker
+        elements.container.setAttribute('visible', true); // Make visible by default for debugging
+        elements.marker.appendChild(elements.container);
+        
+        // Add a simple debug cube directly on the marker
+        const debugCube = document.createElement('a-box');
+        debugCube.setAttribute('color', 'red');
+        debugCube.setAttribute('position', '0 0 0');
+        debugCube.setAttribute('scale', '0.5 0.5 0.5');
+        debugCube.setAttribute('opacity', '0.8');
+        elements.marker.appendChild(debugCube);
+        
+        // Add text to show marker is detected
+        const debugText = document.createElement('a-text');
+        debugText.setAttribute('value', 'MARKER DETECTED');
+        debugText.setAttribute('position', '0 1 0');
+        debugText.setAttribute('align', 'center');
+        debugText.setAttribute('color', 'yellow');
+        debugText.setAttribute('scale', '1 1 1');
+        elements.marker.appendChild(debugText);
+        
+        console.log('AR scene setup complete with debug elements');
     }
 
     // Build the timeline with event blocks
@@ -276,48 +324,45 @@
 
         console.log('Building timeline with container:', elements.container);
 
-        // Sort events chronologically
-        TIMELINE_DATA.sort((a, b) => parseInt(a.year) - parseInt(b.year));
-        
         // Clear any existing blocks
         while (elements.container.firstChild) {
             elements.container.removeChild(elements.container.firstChild);
         }
         
-        // Disable progress tracker temporarily until we fix the display issues
-        // elements.container.setAttribute('progress-tracker', {
-        //     totalEvents: TIMELINE_DATA.length,
-        //     storageKey: 'cs-timeline-visited',
-        //     showBadge: true,
-        //     badgePosition: 'top-right'
-        // });
-        
         // Ensure container is visible
         elements.container.setAttribute('visible', true);
         
-        // Create a title text directly in the scene to confirm AR is working
+        // Create a title text directly above the container
         const titleText = document.createElement('a-text');
-        titleText.setAttribute('value', 'Computer Science Timeline');
-        titleText.setAttribute('color', '#FFFFFF');
+        titleText.setAttribute('value', 'AR TIMELINE');
+        titleText.setAttribute('color', '#FFFF00'); // Bright yellow
         titleText.setAttribute('align', 'center');
-        titleText.setAttribute('position', '0 1.5 0');
-        titleText.setAttribute('scale', '1 1 1');
-        titleText.setAttribute('visible', true);
+        titleText.setAttribute('position', '0 1 0');
+        titleText.setAttribute('scale', '1.5 1.5 1.5');
         elements.container.appendChild(titleText);
         
-        // Create simple cube blocks for testing
-        TIMELINE_DATA.forEach((event, index) => {
-            const position = calculatePosition(index);
-            createSimpleBlock(event, position, index);
-            
-            // Create connector (except for the first block)
-            if (index > 0 && index < TIMELINE_DATA.length) {
-                createSimpleConnector(index, position);
-            }
-        });
+        // Add a simple spinning sphere
+        const sphere = document.createElement('a-sphere');
+        sphere.setAttribute('color', '#FF00FF'); // Bright magenta
+        sphere.setAttribute('position', '0 0 0');
+        sphere.setAttribute('radius', '0.3');
+        sphere.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear');
+        elements.container.appendChild(sphere);
         
-        // Log timeline creation
-        console.log(`Timeline built with ${TIMELINE_DATA.length} events`);
+        // Create a colorful grid of simple objects instead of a complex timeline
+        const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00'];
+        const shapes = ['box', 'sphere', 'cylinder', 'torus'];
+        
+        for (let i = 0; i < 4; i++) {
+            const x = (i - 1.5) * 0.8; // Space them out horizontally
+            const shape = document.createElement(`a-${shapes[i]}`);
+            shape.setAttribute('color', colors[i]);
+            shape.setAttribute('position', `${x} 0 0.5`);
+            shape.setAttribute('animation', 'property: position; to: '+x+' 0.5 0.5; dir: alternate; dur: 1000; loop: true');
+            elements.container.appendChild(shape);
+        }
+        
+        console.log('Created simplified test elements for debugging AR marker detection');
     }
 
     // Calculate position for each timeline block
@@ -471,48 +516,50 @@
         if (!elements.marker) return;
 
         elements.marker.addEventListener('markerFound', () => {
-            console.log('MARKER FOUND EVENT TRIGGERED');
+            // Log immediately to console for debugging
+            console.log('%c MARKER DETECTED! ', 'background: green; color: white; font-size: 20px');
             updateStatus('marker', 'Marker detected');
                 
-            elements.marker.setAttribute('visible', 'true');
-            
-            // Remove any green progress badges
+            // Clear any existing badge elements that might be causing issues
             const badges = document.querySelectorAll('.progress-badge');
-            badges.forEach(badge => {
-                badge.remove();
-            });
+            badges.forEach(badge => badge.remove());
             
-            // Force rebuild the timeline
+            // Ensure the marker itself is visible
+            elements.marker.setAttribute('visible', true);
+            
+            // Create an immediate visual indicator that the marker was found
+            const detectionIndicator = document.createElement('a-entity');
+            detectionIndicator.innerHTML = `
+                <a-sphere color="#FF0000" radius="0.2" position="0 0.5 0" animation="property: scale; to: 1.5 1.5 1.5; dur: 500; easing: easeOutElastic; loop: 3"></a-sphere>
+                <a-text value="MARKER FOUND" color="white" align="center" position="0 1 0" scale="1 1 1"></a-text>
+            `;
+            elements.marker.appendChild(detectionIndicator);
+            
+            // Clear and rebuild the timeline with the simple elements
+            console.log('Building timeline after marker detection');
             buildTimeline();
             
-            // Show all elements immediately
-            elements.container.setAttribute('visible', true);
-            
-            // Make sure all blocks are visible
+            // Alert in a timeout to verify code is still running
             setTimeout(() => {
-                console.log('Setting blocks visible');
-                document.querySelectorAll('a-box.timeline-block').forEach(el => {
-                    el.setAttribute('visible', true);
-                    // Add a pulse animation to make blocks more noticeable
-                    el.setAttribute('animation__pulse', {
-                        property: 'scale',
-                        from: '1 1 1',
-                        to: '1.2 1.2 1.2',
-                        dur: 1000,
-                        dir: 'alternate',
-                        loop: 2
-                    });
+                console.log('Marker detection still active after 2 seconds');
+                
+                // Make sure all blocks are visible and animated
+                document.querySelectorAll('a-sphere, a-box, a-cylinder, a-torus').forEach(el => {
+                    // Set a bright material to ensure visibility
+                    el.setAttribute('material', 'emissive: ' + el.getAttribute('color'));
+                    el.setAttribute('material', 'emissiveIntensity: 0.5');
                 });
                 
-                // Create a floating text above the marker to confirm it's working
-                const confirmText = document.createElement('a-text');
-                confirmText.setAttribute('value', 'Timeline Active');
-                confirmText.setAttribute('position', '0 2 0');
-                confirmText.setAttribute('color', 'white');
-                confirmText.setAttribute('align', 'center');
-                confirmText.setAttribute('scale', '1 1 1');
-                elements.scene.appendChild(confirmText);
-            }, 1000);            
+                // Create a floating text in scene space to confirm it's working
+                const floatingText = document.createElement('a-text');
+                floatingText.setAttribute('value', 'AR WORKING!');
+                floatingText.setAttribute('position', '0 2 -3'); // Position in camera space
+                floatingText.setAttribute('color', '#FF00FF');
+                floatingText.setAttribute('align', 'center');
+                floatingText.setAttribute('scale', '5 5 5');
+                floatingText.setAttribute('look-at', '[camera]');
+                elements.scene.appendChild(floatingText);
+            }, 2000);
         });
 
         elements.marker.addEventListener('markerLost', () => {
