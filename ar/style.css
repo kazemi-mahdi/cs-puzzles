@@ -83,6 +83,7 @@ body {
     max-width: 600px;
     border-radius: 8px;
     animation: modalFadeIn 0.3s ease;
+    text-align: center;
 }
 
 @keyframes modalFadeIn {
@@ -139,6 +140,7 @@ body {
     color: white;
     z-index: 1000;
     font-size: 0.9em;
+    text-align: center;
 }
 
 /* AR Scene Fixes */
@@ -153,7 +155,7 @@ a-marker > a-entity {
 }
 
 /* Text Elements */
-.timeline-text {
+.timeline-text, .title-text {
     font-family: Arial, sans-serif;
     white-space: pre;
     text-align: center;
@@ -170,6 +172,25 @@ a-marker > a-entity {
 @keyframes textFadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal Text */
+.modal-content h2 {
+    margin: 0 0 15px 0;
+    font-size: 1.5em;
+    color: #333;
+}
+
+.modal-content p {
+    margin: 10px 0;
+    line-height: 1.5;
+    color: #666;
+}
+
+.modal-content .year {
+    font-size: 1.2em;
+    color: #3498db;
+    font-weight: bold;
 }
 
 /* Mobile Optimizations */
@@ -204,10 +225,32 @@ a-marker > a-entity {
     align-items: center;
     flex-direction: column;
     z-index: 1001;
+    text-align: center;
 }
 
 #fallback.visible {
     display: flex;
+}
+
+#fallback p {
+    margin: 10px 0;
+    font-size: 1.1em;
+    line-height: 1.5;
+}
+
+#fallback .fallback-reason {
+    color: #FF6B6B;
+    font-size: 0.9em;
+    margin-top: 20px;
+}
+
+/* Loader Text */
+#loader-text {
+    margin-top: 15px;
+    font-size: 1.1em;
+    text-align: center;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 /* Progress Badge */
@@ -222,6 +265,9 @@ a-marker > a-entity {
     border-radius: 20px;
     font-size: 0.9em;
     animation: badgeSlideUp 0.5s ease;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 @keyframes badgeSlideUp {
@@ -230,18 +276,6 @@ a-marker > a-entity {
 }
 
 /* Title Text */
-.title-text {
-    pointer-events: none;
-    z-index: 1;
-    mix-blend-mode: normal;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    font-weight: bold;
-    will-change: transform;
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-}
-
 .title-text a-plane {
     pointer-events: none;
 }
